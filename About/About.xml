@@ -1,0 +1,10 @@
+<ModMetaData>
+	<name>ViolentTakeoff</name>
+	<author>ViolentTakeoff</author>
+	<packageId>ViolentTakeoff.Mod</packageId>
+	<modIconPath IgnoreIfNoMatchingField="True">ViolentTakeoff/Logo</modIconPath>
+	<supportedVersions>
+		<li>1.6</li>
+	</supportedVersions>
+	<description>Debug-only shockwave that expands from a point, destroying things and sometimes starting fires. Contains no user-facing settings.</description>
+</ModMetaData> 

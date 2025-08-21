@@ -1,0 +1,31 @@
+﻿<Properties BuildWithMSBuildOnMono="True">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <Debugger.DebugSourceFolders />
+  <MonoDevelop.Ide.Workbench ActiveDocument="ShockwaveInstance.cs">
+    <Files>
+      <File FileName="Config.cs" Line="6" Column="54" />
+      <File FileName="Designator_ViolentTakeoff.cs" Line="7" Column="2" />
+      <File FileName="GameComponent_ViolentTakeoff.cs" Line="23" Column="21" />
+      <File FileName="ShockwaveInstance.cs" Line="112" Column="48" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="ViolentTakeoff" expanded="True">
+            <Node name="ViolentTakeoff" expanded="True">
+              <Node name="ShockwaveInstance.cs" selected="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+</Properties>

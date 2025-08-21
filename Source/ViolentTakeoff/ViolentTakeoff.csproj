@@ -1,0 +1,80 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<AssemblyName>ViolentTakeoff</AssemblyName>
+		<RootNamespace>ViolentTakeoff</RootNamespace>
+		<OutputPath>../../Assemblies/</OutputPath>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+		<Nullable>disable</Nullable>
+		<Deterministic>false</Deterministic>
+	</PropertyGroup>
+
+	<!-- Windows (RIMWORLD_DIR points to install root containing RimWorldWin64_Data) -->
+	<ItemGroup Condition="Exists('$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/Assembly-CSharp.dll')">
+		<Reference Include="Assembly-CSharp-firstpass">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/Assembly-CSharp-firstpass.dll</HintPath>
+		</Reference>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.InputLegacyModule">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/UnityEngine.InputLegacyModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="0Harmony" Condition="Exists('$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/0Harmony.dll')">
+			<HintPath>$(RIMWORLD_DIR)/RimWorldWin64_Data/Managed/0Harmony.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<!-- macOS (RIMWORLD_DIR points to RimWorld.app or RimWorldMac.app) -->
+	<ItemGroup Condition="Exists('$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/Assembly-CSharp.dll')">
+		<Reference Include="Assembly-CSharp-firstpass">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/Assembly-CSharp-firstpass.dll</HintPath>
+		</Reference>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/Assembly-CSharp.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.InputLegacyModule">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/UnityEngine.InputLegacyModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="0Harmony" Condition="Exists('$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/0Harmony.dll')">
+			<HintPath>$(RIMWORLD_DIR)/Contents/Resources/Data/Managed/0Harmony.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="Assembly-CSharp" />
+	  <None Remove="UnityEngine.CoreModule" />
+	  <None Remove="0Harmony" />
+	  <None Remove="UnityEngine.TextRenderingModule" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Reference Include="Assembly-CSharp">
+	    <HintPath>..\..\Assemblies\net472\Assembly-CSharp.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.CoreModule">
+	    <HintPath>..\..\Assemblies\net472\UnityEngine.CoreModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="0Harmony" Condition="Exists('..\\..\\Assemblies\\net472\\0Harmony.dll')">
+	    <HintPath>..\..\Assemblies\net472\0Harmony.dll</HintPath>
+	  </Reference>
+	  <Reference Include="0Harmony">
+	    <HintPath>..\..\Assemblies\0Harmony.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.TextRenderingModule">
+	    <HintPath>..\..\Assemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+</Project> 
