@@ -98,8 +98,8 @@ namespace ViolentTakeoff
 			listing.Begin(inRect);
 
 			// Tip note
-			listing.Label("Note: Hover over a setting name to see a tooltip with details.");
-
+			listing.Label("VT_Settings_TipNote".Translate());
+			
 			// Preset buttons row
 			Rect row = listing.GetRect(28f);
 			float gap = 6f;
@@ -107,60 +107,60 @@ namespace ViolentTakeoff
 			Rect rSlow = new Rect(row.x, row.y, third, row.height);
 			Rect rDefault = new Rect(rSlow.xMax + gap, row.y, third, row.height);
 			Rect rFast = new Rect(rDefault.xMax + gap, row.y, third, row.height);
-			if (Widgets.ButtonText(rSlow, "Slow computer preset"))
+			if (Widgets.ButtonText(rSlow, "VT_Preset_Slow".Translate()))
 			{
 				ApplyPresetSlow();
 			}
-			if (Widgets.ButtonText(rDefault, "Default preset"))
+			if (Widgets.ButtonText(rDefault, "VT_Preset_Default".Translate()))
 			{
 				ApplyPresetDefault();
 			}
-			if (Widgets.ButtonText(rFast, "Powerful computer preset"))
+			if (Widgets.ButtonText(rFast, "VT_Preset_Powerful".Translate()))
 			{
 				ApplyPresetPowerful();
 			}
 
 			listing.Gap(8f);
 
-			listing.Label("Shockwave speed (cells per second): " + ShockwaveSpeedCellsPerSecond.ToString("0.###"), tooltip: "How many cells the shockwave expands in one second.");
+			listing.Label("VT_ShockwaveSpeed_Label".Translate(ShockwaveSpeedCellsPerSecond.ToString("0.###")), tooltip: "VT_ShockwaveSpeed_Tooltip".Translate());
 			ShockwaveSpeedCellsPerSecond = Widgets.HorizontalSlider(listing.GetRect(22f), ShockwaveSpeedCellsPerSecond, 0.01f, 120f);
 
 			listing.Gap(6f);
-			listing.Label("Fire start chance per cell: " + FireStartChancePerCell.ToString("0.####"), tooltip: "Chance to start a fire in an affected cell.");
+			listing.Label("VT_FireStartChance_Label".Translate(FireStartChancePerCell.ToString("0.####")), tooltip: "VT_FireStartChance_Tooltip".Translate());
 			FireStartChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), FireStartChancePerCell, 0f, 0.2f);
 
 			listing.Gap(6f);
-			listing.Label("Explosion chance per cell: " + ExplosionChancePerCell.ToString("0.####"), tooltip: "Chance to spawn a small explosion in an affected cell.");
+			listing.Label("VT_ExplosionChance_Label".Translate(ExplosionChancePerCell.ToString("0.####")), tooltip: "VT_ExplosionChance_Tooltip".Translate());
 			ExplosionChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), ExplosionChancePerCell, 0f, 0.05f);
 
 			listing.Gap(6f);
-			listing.Label("Fire size: " + FireSize.ToString("0.##"), tooltip: "Size of fires created by the shockwave.");
+			listing.Label("VT_FireSize_Label".Translate(FireSize.ToString("0.##")), tooltip: "VT_FireSize_Tooltip".Translate());
 			FireSize = Widgets.HorizontalSlider(listing.GetRect(22f), FireSize, 0.1f, 5f);
 
 			listing.Gap(6f);
-			listing.Label("Visual effects chance: " + VisualsFleckChance.ToString("0.##"), tooltip: "Chance to display a flash on each processed cell.");
+			listing.Label("VT_VisualsFleckChance_Label".Translate(VisualsFleckChance.ToString("0.##")), tooltip: "VT_VisualsFleckChance_Tooltip".Translate());
 			VisualsFleckChance = Widgets.HorizontalSlider(listing.GetRect(22f), VisualsFleckChance, 0f, 1f);
 
 			listing.Gap(6f);
-			listing.Label("Update frequency divider: " + TickFrequency, tooltip: "Higher values update less often (faster). For example, value of 10 means a single updates happens once every 10 ticks.");
+			listing.Label("VT_TickFrequency_Label".Translate(TickFrequency.ToString()), tooltip: "VT_TickFrequency_Tooltip".Translate());
 			TickFrequency = (int)Widgets.HorizontalSlider(listing.GetRect(22f), TickFrequency, 1, 15);
 
 			listing.Gap(6f);
-			listing.Label("Base cell processing chance: " + BaseCellChance.ToString("0.##"), tooltip: "Controls how many neighboring cells are affected to fill gaps from ring rasterization. Higher values look fuller but cost more performance.");
+			listing.Label("VT_BaseCellChance_Label".Translate(BaseCellChance.ToString("0.##")), tooltip: "VT_BaseCellChance_Tooltip".Translate());
 			BaseCellChance = Widgets.HorizontalSlider(listing.GetRect(22f), BaseCellChance, 0f, 1f);
 
 			listing.Gap(12f);
-			listing.CheckboxLabeled("Visuals only", ref VisualsOnly, "Skip all destruction and show only visual effects. Recommended for slow computers.");
+			listing.CheckboxLabeled("VT_VisualsOnly_Label".Translate(), ref VisualsOnly, "VT_VisualsOnly_Tooltip".Translate());
 
 			if (!VisualsOnly)
 			{
 				listing.Gap(6f);
-				listing.CheckboxLabeled("Remove grass", ref RemoveGrass, "Removes plants and grass in affected cells. Can significantly slow down in lush biomes.");
-				listing.CheckboxLabeled("Destroy items", ref DestroyItems, "Destroy items in affected cells.");
-				listing.CheckboxLabeled("Destroy buildings", ref DestroyBuildings, "Destroy buildings in affected cells.");
-				listing.CheckboxLabeled("Kill pawns", ref KillPawns, "Kill pawns in affected cells.");
-				listing.CheckboxLabeled("Destroy roofholders", ref DestroyRoofholders, "Also destroy roof-holding buildings. This can trigger roof collapse calculations and slow the animation.");
-				listing.CheckboxLabeled("Affect terrain", ref AffectTerrain, "Removes floors or bridges, destroys orbital platforms.");
+				listing.CheckboxLabeled("VT_RemoveGrass_Label".Translate(), ref RemoveGrass, "VT_RemoveGrass_Tooltip".Translate());
+				listing.CheckboxLabeled("VT_DestroyItems_Label".Translate(), ref DestroyItems, "VT_DestroyItems_Tooltip".Translate());
+				listing.CheckboxLabeled("VT_DestroyBuildings_Label".Translate(), ref DestroyBuildings, "VT_DestroyBuildings_Tooltip".Translate());
+				listing.CheckboxLabeled("VT_KillPawns_Label".Translate(), ref KillPawns, "VT_KillPawns_Tooltip".Translate());
+				listing.CheckboxLabeled("VT_DestroyRoofholders_Label".Translate(), ref DestroyRoofholders, "VT_DestroyRoofholders_Tooltip".Translate());
+				listing.CheckboxLabeled("VT_AffectTerrain_Label".Translate(), ref AffectTerrain, "VT_AffectTerrain_Tooltip".Translate());
 			}
 
 			listing.End();

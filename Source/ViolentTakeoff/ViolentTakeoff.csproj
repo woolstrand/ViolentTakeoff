@@ -70,11 +70,17 @@
 	  <Reference Include="0Harmony" Condition="Exists('..\\..\\Assemblies\\net472\\0Harmony.dll')">
 	    <HintPath>..\..\Assemblies\net472\0Harmony.dll</HintPath>
 	  </Reference>
+	  <Reference Include="Assembly-CSharp">
+	    <HintPath>..\..\Assemblies\Assembly-CSharp.dll</HintPath>
+	  </Reference>
 	  <Reference Include="0Harmony">
 	    <HintPath>..\..\Assemblies\0Harmony.dll</HintPath>
 	  </Reference>
 	  <Reference Include="UnityEngine.TextRenderingModule">
 	    <HintPath>..\..\Assemblies\UnityEngine.TextRenderingModule.dll</HintPath>
+	  </Reference>
+	  <Reference Include="UnityEngine.CoreModule">
+	    <HintPath>..\..\Assemblies\UnityEngine.CoreModule.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 </Project> 

@@ -1,0 +1,51 @@
+<LanguageData>
+	<VT_Settings_TipNote>Примечание: наведите курсор на название параметра, чтобы увидеть подсказку с подробностями.</VT_Settings_TipNote>
+
+	<VT_Preset_Slow>Пресет для слабого ПК</VT_Preset_Slow>
+	<VT_Preset_Default>Пресет по умолчанию</VT_Preset_Default>
+	<VT_Preset_Powerful>Пресет для мощного ПК</VT_Preset_Powerful>
+
+	<VT_ShockwaveSpeed_Label>Скорость ударной волны (клеток в секунду): {0}</VT_ShockwaveSpeed_Label>
+	<VT_ShockwaveSpeed_Tooltip>Сколько клеток проходит волна за одну секунду.</VT_ShockwaveSpeed_Tooltip>
+
+	<VT_FireStartChance_Label>Шанс возгорания на клетку: {0}</VT_FireStartChance_Label>
+	<VT_FireStartChance_Tooltip>Вероятность поджечь клетку, затронутую волной.</VT_FireStartChance_Tooltip>
+
+	<VT_ExplosionChance_Label>Шанс взрыва на клетку: {0}</VT_ExplosionChance_Label>
+	<VT_ExplosionChance_Tooltip>Вероятность породить небольшой взрыв в затронутой клетке.</VT_ExplosionChance_Tooltip>
+
+	<VT_FireSize_Label>Размер огня: {0}</VT_FireSize_Label>
+	<VT_FireSize_Tooltip>Размер пожаров, создаваемых ударной волной.</VT_FireSize_Tooltip>
+
+	<VT_VisualsFleckChance_Label>Шанс визуального эффекта: {0}</VT_VisualsFleckChance_Label>
+	<VT_VisualsFleckChance_Tooltip>Вероятность отобразить вспышку для каждой обработанной клетки.</VT_VisualsFleckChance_Tooltip>
+
+	<VT_TickFrequency_Label>Делитель частоты обновления: {0}</VT_TickFrequency_Label>
+	<VT_TickFrequency_Tooltip>Большие значения обновляют реже. 1 - обновлять расчеты каждый кадр, 10 - обновлять только на каждый 10й кадр.</VT_TickFrequency_Tooltip>
+
+	<VT_BaseCellChance_Label>Базовый шанс обработки клетки: {0}</VT_BaseCellChance_Label>
+	<VT_BaseCellChance_Tooltip>Определяет, сколько соседних клеток затрагивается для заполнения разрывов от растеризации кольца. Большие значения выглядят плотнее, но требуют больше ресурсов.</VT_BaseCellChance_Tooltip>
+
+	<VT_VisualsOnly_Label>Отключить разрушения, оставить только визуальные эффекты</VT_VisualsOnly_Label>
+	<VT_VisualsOnly_Tooltip>Пропускать разрушение и показывать только визуальные эффекты. Рекомендуется для слабых компьютеров.</VT_VisualsOnly_Tooltip>
+
+	<VT_RemoveGrass_Label>Удалять траву</VT_RemoveGrass_Label>
+	<VT_RemoveGrass_Tooltip>Удаляет растения и траву в затронутых клетках. Может значительно замедлить работу в густых биомах.</VT_RemoveGrass_Tooltip>
+
+	<VT_DestroyItems_Label>Уничтожать предметы</VT_DestroyItems_Label>
+	<VT_DestroyItems_Tooltip>Уничтожает лежащие предметы в затронутых клетках.</VT_DestroyItems_Tooltip>
+
+	<VT_DestroyBuildings_Label>Разрушать постройки (но не стены)</VT_DestroyBuildings_Label>
+	<VT_DestroyBuildings_Tooltip>Разрушает мебель, верстаки, ограды и прочие постройки, которые не могут поддерживать крышу.</VT_DestroyBuildings_Tooltip>
+
+	<VT_KillPawns_Label>Убивать существ</VT_KillPawns_Label>
+	<VT_KillPawns_Tooltip>Убивает людей, животных и всех прочих в затронутых клетках.</VT_KillPawns_Tooltip>
+
+	<VT_DestroyRoofholders_Label>Разрушать стены</VT_DestroyRoofholders_Label>
+	<VT_DestroyRoofholders_Tooltip>Разрушает стены, колонны и все прочее, что может держать потолок. Такие разрушения вызывают пересчет обрушения крыши, что сильно влияет на производительность.</VT_DestroyRoofholders_Tooltip>
+
+	<VT_AffectTerrain_Label>Затрагивать территорию</VT_AffectTerrain_Label>
+	<VT_AffectTerrain_Tooltip>Удаляет полы и мосты, разрушает орбитальные платформы. Слабо влияет на производительность.</VT_AffectTerrain_Tooltip>
+
+	<VT_Settings_Category>Violent Takeoff</VT_Settings_Category>
+</LanguageData> 

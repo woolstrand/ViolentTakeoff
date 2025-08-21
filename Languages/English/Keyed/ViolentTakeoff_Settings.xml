@@ -1,0 +1,51 @@
+<LanguageData>
+	<VT_Settings_TipNote>Note: Hover over a setting name to see a tooltip with details.</VT_Settings_TipNote>
+
+	<VT_Preset_Slow>Slow computer preset</VT_Preset_Slow>
+	<VT_Preset_Default>Default preset</VT_Preset_Default>
+	<VT_Preset_Powerful>Powerful computer preset</VT_Preset_Powerful>
+
+	<VT_ShockwaveSpeed_Label>Shockwave speed (cells per second): {0}</VT_ShockwaveSpeed_Label>
+	<VT_ShockwaveSpeed_Tooltip>How many cells the shockwave expands in one second.</VT_ShockwaveSpeed_Tooltip>
+
+	<VT_FireStartChance_Label>Fire start chance per cell: {0}</VT_FireStartChance_Label>
+	<VT_FireStartChance_Tooltip>Chance to start a fire in an affected cell.</VT_FireStartChance_Tooltip>
+
+	<VT_ExplosionChance_Label>Explosion chance per cell: {0}</VT_ExplosionChance_Label>
+	<VT_ExplosionChance_Tooltip>Chance to spawn a small explosion in an affected cell.</VT_ExplosionChance_Tooltip>
+
+	<VT_FireSize_Label>Fire size: {0}</VT_FireSize_Label>
+	<VT_FireSize_Tooltip>Size of fires created by the shockwave.</VT_FireSize_Tooltip>
+
+	<VT_VisualsFleckChance_Label>Visual effects chance: {0}</VT_VisualsFleckChance_Label>
+	<VT_VisualsFleckChance_Tooltip>Chance to display a flash on each processed cell.</VT_VisualsFleckChance_Tooltip>
+
+	<VT_TickFrequency_Label>Update frequency divider: {0}</VT_TickFrequency_Label>
+	<VT_TickFrequency_Tooltip>Higher values update less often. For example, value of 10 means a single update happens once every 10 frames, while 1 means updates are calculated for each frame.</VT_TickFrequency_Tooltip>
+
+	<VT_BaseCellChance_Label>Cell processing chance: {0}</VT_BaseCellChance_Label>
+	<VT_BaseCellChance_Tooltip>Controls probability of running calculation for a particular cell. Because of how explosion ring rasterization works, too high values lead to some cells affected twice (which slows down animation without any additional value), too low values could lead to gaps in shockwave processing, leaving some cells intact. Overall, higher values look fuller but cost more performance.</VT_BaseCellChance_Tooltip>
+
+	<VT_VisualsOnly_Label>No real destruction, visuals only</VT_VisualsOnly_Label>
+	<VT_VisualsOnly_Tooltip>Skip all destruction and show only visual effects. Recommended for slow computers.</VT_VisualsOnly_Tooltip>
+
+	<VT_RemoveGrass_Label>Remove grass</VT_RemoveGrass_Label>
+	<VT_RemoveGrass_Tooltip>Removes plants and grass in affected cells. Can significantly slow down in lush biomes.</VT_RemoveGrass_Tooltip>
+
+	<VT_DestroyItems_Label>Destroy items</VT_DestroyItems_Label>
+	<VT_DestroyItems_Tooltip>Destroy items in affected cells.</VT_DestroyItems_Tooltip>
+
+	<VT_DestroyBuildings_Label>Destroy regular objects (but not walls)</VT_DestroyBuildings_Label>
+	<VT_DestroyBuildings_Tooltip>Destroy furniture, fences, workbenches and everything else that can not support roof. Destroying this kind of things do not affect performance significantly.</VT_DestroyBuildings_Tooltip>
+
+	<VT_KillPawns_Label>Kill pawns</VT_KillPawns_Label>
+	<VT_KillPawns_Tooltip>Kill pawns in affected cells.</VT_KillPawns_Tooltip>
+
+	<VT_DestroyRoofholders_Label>Destroy roofholders</VT_DestroyRoofholders_Label>
+	<VT_DestroyRoofholders_Tooltip>Also destroy roof-holding objects like walls or pillars. This usually triggers roof collapse calculations and slows the animation.</VT_DestroyRoofholders_Tooltip>
+
+	<VT_AffectTerrain_Label>Affect terrain</VT_AffectTerrain_Label>
+	<VT_AffectTerrain_Tooltip>Removes floors or bridges, destroys orbital platforms.</VT_AffectTerrain_Tooltip>
+
+	<VT_Settings_Category>Violent Takeoff</VT_Settings_Category>
+</LanguageData> 

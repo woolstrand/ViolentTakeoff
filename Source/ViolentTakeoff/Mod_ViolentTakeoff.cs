@@ -15,7 +15,7 @@ namespace ViolentTakeoff
 			harmony.PatchAll();
 		}
 
-		public override string SettingsCategory() => "Violent Takeoff";
+		public override string SettingsCategory() => "VT_Settings_Category".Translate();
 
 		public override void DoSettingsWindowContents(Rect inRect)
 		{
