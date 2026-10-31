@@ -9,7 +9,7 @@ namespace ViolentTakeoff
 		public static float ExplosionChancePerCell => Mod_ViolentTakeoff.Settings?.ExplosionChancePerCell ?? 0.001f;
 		public static float FireSize => Mod_ViolentTakeoff.Settings?.FireSize ?? 0.6f;
 		public static float VisualsFleckChance => Mod_ViolentTakeoff.Settings?.VisualsFleckChance ?? 0.8f;
-		public static int TickFrequency => Mod_ViolentTakeoff.Settings?.TickFrequency ?? 4;
+		public static int CellsPerFrame => Mod_ViolentTakeoff.Settings?.CellsPerFrame ?? 1500;
 		public static float BaseCellChance => Mod_ViolentTakeoff.Settings?.BaseCellChance ?? 0.55f;
 		public static bool RemoveGrass => Mod_ViolentTakeoff.Settings?.RemoveGrass ?? true;
 		public static bool DestroyItems => Mod_ViolentTakeoff.Settings?.DestroyItems ?? true;
@@ -19,27 +19,14 @@ namespace ViolentTakeoff
 		public static bool DestroyRoofholders => Mod_ViolentTakeoff.Settings?.DestroyRoofholders ?? false;
 		public static bool AffectTerrain => Mod_ViolentTakeoff.Settings?.AffectTerrain ?? true;
 
-		public static float ShockwaveAdvancePerUpdate
-		{
-			get
-			{
-				float tf = Mod_ViolentTakeoff.Settings?.TickFrequency ?? 4;
-				float perUpdate = ShockwaveSpeedCellsPerSecond * (tf / 60f);
-				return perUpdate < 0.01f ? 0.01f : perUpdate;
-			}
-		}
 
 		// Visuals (not exposed to user)
-		public const float VisualsSmokeChance = 0.0f;
+		public const float DustPuffChance = 0.05f;
 		public const float FleckScaleMin = 1.2f;
 		public const float FleckScaleMax = 5.2f;
-		public const float SmokeSizeMin = 0.5f;
-		public const float SmokeSizeMax = 1.1f;
 	}
 
 	public static class DevastationManager {
 		public static bool SuppressRoofChecks = false;
-		// Set once the gravship (with its pawns) has been removed from the map; time may flow only after that.
-		public static bool ShipDeparted = false;
 	}
 } 

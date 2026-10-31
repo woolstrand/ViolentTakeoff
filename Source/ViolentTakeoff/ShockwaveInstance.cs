@@ -1,210 +1,165 @@
+using System;
+using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using Verse.Noise;
-using System.Linq;
 
 namespace ViolentTakeoff
 {
+	// Driven by real time (frame deltaTime), not ticks: the takeoff cutscene keeps the game paused.
+	// All map cells are sorted by distance from the center once; the wave walks that list as the radius
+	// grows, so every cell is reached exactly once and no cell is skipped when the radius jumps.
 	public class ShockwaveInstance
 	{
+		private const float StartRadius = 10f;
+		private const int MaxThingsPerCell = 10;
+
 		public readonly Map Map;
 		public readonly IntVec3 Center;
-		public float CurrentRadius;
+
+		private readonly int[] cellIndices;
+		private readonly float[] cellDistances;
+		private int nextCell;
+		private float radius = StartRadius;
+
+		private readonly List<Thing> tmpThings = new List<Thing>();
+
+		public float MaxRadius => cellDistances.Length > 0 ? cellDistances[cellDistances.Length - 1] : 0f;
 
 		public ShockwaveInstance(IntVec3 center, Map map)
 		{
 			Center = center;
 			Map = map;
-			CurrentRadius = 10f;
-		}
 
-		public bool TickOnce()
-		{
-			if (Map == null || !Center.InBounds(Map))
+			CellRect rect = CellRect.WholeMap(map).ContractedBy(1);
+			var indices = new List<int>(rect.Area);
+			var distances = new List<float>(rect.Area);
+			foreach (IntVec3 cell in rect)
 			{
-				return true;
+				float dist = (cell - center).LengthHorizontal;
+				if (dist < StartRadius) continue;
+				indices.Add(map.cellIndices.CellToIndex(cell));
+				distances.Add(dist);
 			}
+			cellIndices = indices.ToArray();
+			cellDistances = distances.ToArray();
+			Array.Sort(cellDistances, cellIndices);
 
-			float advance = Mathf.Max(0.01f, Config.ShockwaveAdvancePerUpdate);
-			float radius = CurrentRadius;
-
-			// Process only cells at the exact current radius
-			ProcessRingAtRadius(radius);
-
-			CurrentRadius += advance;
-
-			float maxRadius = MaxRadiusForMap();
-			return CurrentRadius > maxRadius;
+			ShockwaveEffects.Ring(map, center, StartRadius, Config.ShockwaveSpeedCellsPerSecond, MaxRadius);
 		}
 
-		private void ProcessRingAtRadius(float radius)
+		// Returns true when the wave has passed every cell.
+		public bool Update(float deltaTime)
 		{
-			if (radius <= 0f) return;
+			radius += Config.ShockwaveSpeedCellsPerSecond * deltaTime;
 
-			// Use integer radius for cell-based calculations
-			int intRadius = Mathf.RoundToInt(radius);
-			
-			// Traverse the ring using Bresenham's circle algorithm
-			int x = intRadius;
-			int y = 0;
-			int err = 0;
-
-			while (x >= y)
+			// Budget keeps a dense base from causing a hitch; leftover cells are picked up next frame.
+			int budget = Config.CellsPerFrame;
+			while (nextCell < cellIndices.Length && cellDistances[nextCell] <= radius && budget-- > 0)
 			{
-				// Process the 8 octants of the circle
-				ProcessCell(Center.x + x, Center.z + y);
-				ProcessCell(Center.x + y, Center.z + x);
-				ProcessCell(Center.x - y, Center.z + x);
-				ProcessCell(Center.x - x, Center.z + y);
-				ProcessCell(Center.x - x, Center.z - y);
-				ProcessCell(Center.x - y, Center.z - x);
-				ProcessCell(Center.x + y, Center.z - x);
-				ProcessCell(Center.x + x, Center.z - y);
-
-				if (err < 0)
-				{
-					y += 1;
-					err += 2 * y + 1;
-				}
-				if (err >= 0)
-				{
-					x -= 1;
-					err -= 2 * x + 1;
-				}
+				ProcessCell(Map.cellIndices.IndexToCell(cellIndices[nextCell]));
+				nextCell++;
 			}
+			return nextCell >= cellIndices.Length;
 		}
 
-		private void ProcessCell(int x, int z)
+		private void ProcessCell(IntVec3 cell)
 		{
-			var cell = new IntVec3(x, 0, z);
-			if (!cell.InBounds(Map, contractedBy: 1)) return;
+			if (!Rand.Chance(Config.BaseCellChance)) return;
 
-			float baseCellChance = Config.BaseCellChance;
-            if (Rand.Chance(baseCellChance)) AffectCell(new IntVec3(x, 0, z));
-            if (Rand.Chance(baseCellChance)) AffectCell(new IntVec3(x + 1, 0, z));
-            if (Rand.Chance(baseCellChance)) AffectCell(new IntVec3(x - 1, 0, z));
-            if (Rand.Chance(baseCellChance)) AffectCell(new IntVec3(x, 0, z + 1));
-            if (Rand.Chance(baseCellChance)) AffectCell(new IntVec3(x, 0, z - 1));
-        }
-
-        private float MaxRadiusForMap()
-		{
-			var size = Map.Size;
-			var corners = new[]
+			if (!Config.VisualsOnly)
 			{
-				new IntVec3(0, 0, 0),
-				new IntVec3(size.x - 1, 0, 0),
-				new IntVec3(0, 0, size.z - 1),
-				new IntVec3(size.x - 1, 0, size.z - 1)
-			};
-			float max = 0f;
-			for (int i = 0; i < corners.Length; i++)
-			{
-				float dist = (corners[i] - Center).LengthHorizontal;
-				if (dist > max) max = dist;
-			}
-			return max + 2f;
-		}
-
-		private void AffectCell(IntVec3 cell) {
-			if (!Config.VisualsOnly) {
 				AffectThings(cell);
 			}
-			if (Config.AffectTerrain) {
+			if (Config.AffectTerrain)
+			{
 				AffectTerrain(cell);
-            }
+			}
 			AddVisuals(cell);
 		}
 
-		private void AffectTerrain(IntVec3 cell) {
-            var terrain = Map.terrainGrid.TerrainAt(cell);
-            if (terrain == TerrainDefOf.MechanoidPlatform || terrain == TerrainDefOf.OrbitalPlatform) {
-                Map.terrainGrid.SetTerrain(cell, TerrainDefOf.Space);
-            } else {
-                Map.terrainGrid.RemoveTopLayer(cell, doLeavings: false);
-            }
-        }
-
-        private void AffectThings(IntVec3 cell) {
-            var things = GridsUtility.GetThingList(cell, Map).Take(10).ToList();
-			int processed = 0;
-			foreach (Thing thing in things) {
-
-				//early stop for long stacks
-				processed += 1;
-				if (processed > 10) return;
-
-				if (thing == null || thing.Destroyed || !thing.def.destroyable) continue;
-				if (thing is Skyfaller) continue;
-
-				// Skip motes
-				if (thing.def.destroyOnDrop)
-					continue;
-
-				// Skip natural rock (mountains)
-				if (thing.def.building != null && thing.def.building.isNaturalRock)
-					continue;
-
-                // Keep roof holders to avoid expensive collapse recalcs
-                if (thing.def.holdsRoof && !Config.DestroyRoofholders) {
-                    continue;
-                }
-
-                // Handle plants (remove grass, crops, etc.)
-                if (thing is Plant plant && Config.RemoveGrass) {
-                    plant.Destroy(DestroyMode.Vanish);
-                    continue;
-                }
-
-                if (thing is Pawn pawn && Config.KillPawns) {
-                    pawn.Kill(null);
-                    continue;
-                }
-
-                if (thing.def.category == ThingCategory.Building && Config.DestroyBuildings) {
-					thing.Destroy(DestroyMode.KillFinalize);
-					continue;
-				}
-
-                if (thing.def.category == ThingCategory.Item && Config.DestroyItems) {
-					thing.Destroy(DestroyMode.KillFinalize);
-					continue;
-				}
-
+		private void AffectTerrain(IntVec3 cell)
+		{
+			var terrain = Map.terrainGrid.TerrainAt(cell);
+			if (terrain == TerrainDefOf.MechanoidPlatform || terrain == TerrainDefOf.OrbitalPlatform)
+			{
+				Map.terrainGrid.SetTerrain(cell, TerrainDefOf.Space);
+			}
+			else
+			{
+				Map.terrainGrid.RemoveTopLayer(cell, doLeavings: false);
 			}
 		}
 
-        private void AddVisuals(IntVec3 cell) {
-            // Visuals
-            if (Rand.Chance(Config.VisualsFleckChance))
+		private void AffectThings(IntVec3 cell)
+		{
+			// Copy: destroying things mutates the grid list.
+			List<Thing> things = Map.thingGrid.ThingsListAtFast(cell);
+			tmpThings.Clear();
+			for (int i = 0; i < things.Count && i < MaxThingsPerCell; i++)
 			{
-				float scale = Rand.Range(Config.FleckScaleMin, Config.FleckScaleMax);
-				FleckMaker.ThrowExplosionCell(cell, Map, FleckDefOf.ExplosionFlash, Color.yellow);
+				tmpThings.Add(things[i]);
 			}
-			if (Rand.Chance(Config.VisualsSmokeChance))
+
+			foreach (Thing thing in tmpThings)
 			{
-				float size = Rand.Range(Config.SmokeSizeMin, Config.SmokeSizeMax);
-				FleckMaker.ThrowSmoke(cell.ToVector3Shifted(), Map, size);
+				if (thing == null || thing.Destroyed || !thing.Spawned || !thing.def.destroyable) continue;
+				if (thing is Skyfaller) continue;
+
+				// Skip motes
+				if (thing.def.destroyOnDrop) continue;
+
+				// Skip natural rock (mountains)
+				if (thing.def.building != null && thing.def.building.isNaturalRock) continue;
+
+				// Keep roof holders to avoid expensive collapse recalcs
+				if (thing.def.holdsRoof && !Config.DestroyRoofholders) continue;
+
+				if (thing is Plant)
+				{
+					if (Config.RemoveGrass) thing.Destroy(DestroyMode.Vanish);
+					continue;
+				}
+
+				if (thing is Pawn pawn)
+				{
+					if (Config.KillPawns) pawn.Kill(null);
+					continue;
+				}
+
+				// Vanish: no leavings or filth to spawn on a map that is about to be discarded.
+				if (thing.def.category == ThingCategory.Building && Config.DestroyBuildings)
+				{
+					thing.Destroy(DestroyMode.Vanish);
+					continue;
+				}
+
+				if (thing.def.category == ThingCategory.Item && Config.DestroyItems)
+				{
+					thing.Destroy(DestroyMode.Vanish);
+				}
 			}
-            if (Rand.Chance(Config.FireStartChancePerCell)) {
-                FireUtility.TryStartFireIn(cell, Map, Config.FireSize, instigator: null);
-            }
-            if (Rand.Chance(Config.ExplosionChancePerCell)) {
-				GenExplosion.DoExplosion(center: cell, map: Map, radius: 4.5f, damType: DamageDefOf.Bomb, instigator: null, damAmount: 1, screenShakeFactor: 0);
-            }
-        }
+			tmpThings.Clear();
+		}
 
-        private static void PlaceRubble(Map map, IntVec3 origin) {
-            foreach (var c in GenRadial.RadialCellsAround(origin, 3, true)) {
-                if (!c.InBounds(map) || c.Filled(map))
-                    continue;
-
-                if (Rand.Chance(0.2f)) // chance per cell
-                {
-                    GenSpawn.Spawn(ThingDefOf.Filth_RubbleBuilding, c, map, WipeMode.Vanish);
-                }
-            }
-        }
-    }
-} 
+		private void AddVisuals(IntVec3 cell)
+		{
+			if (Rand.Chance(Config.VisualsFleckChance))
+			{
+				ShockwaveEffects.CellFlash(Map, cell);
+			}
+			if (Rand.Chance(Config.DustPuffChance))
+			{
+				ShockwaveEffects.DustPuff(Map, cell);
+			}
+			if (Rand.Chance(Config.FireStartChancePerCell))
+			{
+				ShockwaveEffects.Fire(Map, cell, Config.FireSize);
+			}
+			if (Rand.Chance(Config.ExplosionChancePerCell))
+			{
+				ShockwaveEffects.Explosion(Map, cell);
+			}
+		}
+	}
+}

@@ -46,8 +46,8 @@ namespace ViolentTakeoff
             Verse.Log.Message("Got map");
 
             DevastationManager.SuppressRoofChecks = true;
-            DevastationManager.ShipDeparted = true;
-            MapComponent_ViolentTakeoff.Ensure(map)?.StartShockwave(originalCell);
+            // The game stays paused for the whole cutscene; the shockwave animates on real time.
+            MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell);
 
 			Verse.Log.Message("Started shockwave at " + originalCell);
 		}
@@ -56,29 +56,8 @@ namespace ViolentTakeoff
 		[HarmonyPostfix]
 		private static void Postfix_TakeoffEnded(WorldComponent_GravshipController __instance) {
 			DevastationManager.SuppressRoofChecks = false;
-			DevastationManager.ShipDeparted = false;
 		}
 
-        [HarmonyPatch(typeof(TickManager), nameof(TickManager.ForcePaused), MethodType.Getter)]
-		[HarmonyPostfix]
-		private static void Postfix_TickManager_ForcePaused(ref bool __result)
-		{
-			// CutsceneInProgress turns on before the ship's pawns are despawned (capture, pan, delay); unpausing
-			// in that window lets colonists walk off the ship and get left behind.
-			if (!WorldComponent_GravshipController.CutsceneInProgress || !DevastationManager.ShipDeparted)
-				return;
-
-			bool otherPause = false;
-			var ws = Find.WindowStack;
-			if (ws != null && ws.WindowsForcePause) otherPause = true;
-			if (LongEventHandler.ForcePause) otherPause = true;
-			if (Find.TilePicker.Active) otherPause = true;
-
-			if (!otherPause)
-			{
-				__result = false;
-			}
-		}
 
         [HarmonyPatch(typeof(RoofCollapseCellsFinder), "ProcessRoofHolderDespawned")]
         [HarmonyPrefix]		

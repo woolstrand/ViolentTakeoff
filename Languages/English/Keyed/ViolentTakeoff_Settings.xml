@@ -9,22 +9,22 @@
 	<VT_ShockwaveSpeed_Tooltip>How many cells the shockwave expands in one second.</VT_ShockwaveSpeed_Tooltip>
 
 	<VT_FireStartChance_Label>Fire start chance per cell: {0}</VT_FireStartChance_Label>
-	<VT_FireStartChance_Tooltip>Chance to start a fire in an affected cell.</VT_FireStartChance_Tooltip>
+	<VT_FireStartChance_Tooltip>Chance to show flames and smoke in an affected cell. These are visual only: real fires can not burn while the game is paused during takeoff.</VT_FireStartChance_Tooltip>
 
 	<VT_ExplosionChance_Label>Explosion chance per cell: {0}</VT_ExplosionChance_Label>
-	<VT_ExplosionChance_Tooltip>Chance to spawn a small explosion in an affected cell.</VT_ExplosionChance_Tooltip>
+	<VT_ExplosionChance_Tooltip>Chance to show a small explosion in an affected cell.</VT_ExplosionChance_Tooltip>
 
 	<VT_FireSize_Label>Fire size: {0}</VT_FireSize_Label>
-	<VT_FireSize_Tooltip>Size of fires created by the shockwave.</VT_FireSize_Tooltip>
+	<VT_FireSize_Tooltip>Size of flames shown by the shockwave.</VT_FireSize_Tooltip>
 
 	<VT_VisualsFleckChance_Label>Visual effects chance: {0}</VT_VisualsFleckChance_Label>
 	<VT_VisualsFleckChance_Tooltip>Chance to display a flash on each processed cell.</VT_VisualsFleckChance_Tooltip>
 
-	<VT_TickFrequency_Label>Update frequency divider: {0}</VT_TickFrequency_Label>
-	<VT_TickFrequency_Tooltip>Higher values update less often. For example, value of 10 means a single update happens once every 10 frames, while 1 means updates are calculated for each frame.</VT_TickFrequency_Tooltip>
+	<VT_CellsPerFrame_Label>Max cells per frame: {0}</VT_CellsPerFrame_Label>
+	<VT_CellsPerFrame_Tooltip>Upper limit of cells the shockwave processes in a single frame. Lower values keep the frame rate smooth over dense bases, but the wave may fall behind its nominal speed there.</VT_CellsPerFrame_Tooltip>
 
-	<VT_BaseCellChance_Label>Cell processing chance: {0}</VT_BaseCellChance_Label>
-	<VT_BaseCellChance_Tooltip>Controls probability of running calculation for a particular cell. Because of how explosion ring rasterization works, too high values lead to some cells affected twice (which slows down animation without any additional value), too low values could lead to gaps in shockwave processing, leaving some cells intact. Overall, higher values look fuller but cost more performance.</VT_BaseCellChance_Tooltip>
+	<VT_BaseCellChance_Label>Cell coverage: {0}</VT_BaseCellChance_Label>
+	<VT_BaseCellChance_Tooltip>Chance that a cell in the shockwave's path is affected (destruction and effects). The wave reaches every cell exactly once; 1 leaves nothing intact, lower values leave random cells untouched.</VT_BaseCellChance_Tooltip>
 
 	<VT_VisualsOnly_Label>No real destruction, visuals only</VT_VisualsOnly_Label>
 	<VT_VisualsOnly_Tooltip>Skip all destruction and show only visual effects. Recommended for slow computers.</VT_VisualsOnly_Tooltip>

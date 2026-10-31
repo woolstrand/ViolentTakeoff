@@ -9,22 +9,22 @@
 	<VT_ShockwaveSpeed_Tooltip>Сколько клеток проходит волна за одну секунду.</VT_ShockwaveSpeed_Tooltip>
 
 	<VT_FireStartChance_Label>Шанс возгорания на клетку: {0}</VT_FireStartChance_Label>
-	<VT_FireStartChance_Tooltip>Вероятность поджечь клетку, затронутую волной.</VT_FireStartChance_Tooltip>
+	<VT_FireStartChance_Tooltip>Вероятность показать пламя и дым в затронутой клетке. Только визуально: настоящий огонь не горит, пока игра на паузе во время взлёта.</VT_FireStartChance_Tooltip>
 
 	<VT_ExplosionChance_Label>Шанс взрыва на клетку: {0}</VT_ExplosionChance_Label>
 	<VT_ExplosionChance_Tooltip>Вероятность породить небольшой взрыв в затронутой клетке.</VT_ExplosionChance_Tooltip>
 
 	<VT_FireSize_Label>Размер огня: {0}</VT_FireSize_Label>
-	<VT_FireSize_Tooltip>Размер пожаров, создаваемых ударной волной.</VT_FireSize_Tooltip>
+	<VT_FireSize_Tooltip>Размер пламени, показываемого ударной волной.</VT_FireSize_Tooltip>
 
 	<VT_VisualsFleckChance_Label>Шанс визуального эффекта: {0}</VT_VisualsFleckChance_Label>
 	<VT_VisualsFleckChance_Tooltip>Вероятность отобразить вспышку для каждой обработанной клетки.</VT_VisualsFleckChance_Tooltip>
 
-	<VT_TickFrequency_Label>Делитель частоты обновления: {0}</VT_TickFrequency_Label>
-	<VT_TickFrequency_Tooltip>Большие значения обновляют реже. 1 - обновлять расчеты каждый кадр, 10 - обновлять только на каждый 10й кадр.</VT_TickFrequency_Tooltip>
+	<VT_CellsPerFrame_Label>Максимум клеток за кадр: {0}</VT_CellsPerFrame_Label>
+	<VT_CellsPerFrame_Tooltip>Сколько клеток ударная волна может обработать за один кадр. Меньшие значения сохраняют плавность над плотной застройкой, но волна там может отставать от заданной скорости.</VT_CellsPerFrame_Tooltip>
 
-	<VT_BaseCellChance_Label>Базовый шанс обработки клетки: {0}</VT_BaseCellChance_Label>
-	<VT_BaseCellChance_Tooltip>Определяет, сколько соседних клеток затрагивается для заполнения разрывов от растеризации кольца. Большие значения выглядят плотнее, но требуют больше ресурсов.</VT_BaseCellChance_Tooltip>
+	<VT_BaseCellChance_Label>Покрытие клеток: {0}</VT_BaseCellChance_Label>
+	<VT_BaseCellChance_Tooltip>Вероятность того, что клетка на пути волны будет затронута (разрушения и эффекты). Волна проходит каждую клетку ровно один раз; 1 не оставляет ничего целого, меньшие значения оставляют случайные клетки нетронутыми.</VT_BaseCellChance_Tooltip>
 
 	<VT_VisualsOnly_Label>Отключить разрушения, оставить только визуальные эффекты</VT_VisualsOnly_Label>
 	<VT_VisualsOnly_Tooltip>Пропускать разрушение и показывать только визуальные эффекты. Рекомендуется для слабых компьютеров.</VT_VisualsOnly_Tooltip>

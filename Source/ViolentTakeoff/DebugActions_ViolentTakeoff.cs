@@ -12,7 +12,7 @@ namespace ViolentTakeoff
 		{
 			var map = Find.CurrentMap;
 			if (map == null) return;
-			MapComponent_ViolentTakeoff.Ensure(map)?.StartShockwave(UI.MouseCell());
+			MapComponent_ViolentTakeoff.For(map)?.StartShockwave(UI.MouseCell());
 		}
 
 		[DebugAction("Violent Takeoff", "Stop all shockwaves", actionType = DebugActionType.Action, allowedGameStates = AllowedGameStates.PlayingOnMap)]

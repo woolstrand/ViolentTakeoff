@@ -10,8 +10,8 @@ namespace ViolentTakeoff
 		public float ExplosionChancePerCell = 0.001f;
 		public float FireSize = 0.6f;
 		public float VisualsFleckChance = 0.8f;
-		public int TickFrequency = 4;
-		public float BaseCellChance = 0.55f;
+		public int CellsPerFrame = 1500;
+		public float BaseCellChance = 0.95f;
 		public bool RemoveGrass = true;
 		public bool DestroyItems = true;
 		public bool DestroyBuildings = true;
@@ -27,8 +27,8 @@ namespace ViolentTakeoff
 			Scribe_Values.Look(ref ExplosionChancePerCell, "ExplosionChancePerCell", 0.0015f);
 			Scribe_Values.Look(ref FireSize, "FireSize", 2.0f);
 			Scribe_Values.Look(ref VisualsFleckChance, "VisualsFleckChance", 0.8f);
-			Scribe_Values.Look(ref TickFrequency, "TickFrequency", 2);
-			Scribe_Values.Look(ref BaseCellChance, "BaseCellChance", 0.6f);
+			Scribe_Values.Look(ref CellsPerFrame, "CellsPerFrame", 1500);
+			Scribe_Values.Look(ref BaseCellChance, "BaseCellCoverage", 0.95f);
 			Scribe_Values.Look(ref RemoveGrass, "RemoveGrass", false);
 			Scribe_Values.Look(ref DestroyItems, "DestroyItems", true);
 			Scribe_Values.Look(ref DestroyBuildings, "DestroyBuildings", true);
@@ -41,8 +41,8 @@ namespace ViolentTakeoff
 		private void ApplyPresetSlow()
 		{
 			VisualsOnly = true;
-			TickFrequency = 3;
-			BaseCellChance = 0.5f;
+			CellsPerFrame = 600;
+			BaseCellChance = 0.8f;
 			ShockwaveSpeedCellsPerSecond = 20.0f;
 			VisualsFleckChance = 0.6f;
 			FireStartChancePerCell = 0.005f;
@@ -59,8 +59,8 @@ namespace ViolentTakeoff
 		private void ApplyPresetDefault()
 		{
 			VisualsOnly = false;
-			TickFrequency = 2;
-			BaseCellChance = 0.6f;
+			CellsPerFrame = 1500;
+			BaseCellChance = 0.95f;
 			ShockwaveSpeedCellsPerSecond = 25.0f;
 			VisualsFleckChance = 0.8f;
 			FireStartChancePerCell = 0.01f;
@@ -77,8 +77,8 @@ namespace ViolentTakeoff
 		private void ApplyPresetPowerful()
 		{
 			VisualsOnly = false;
-			TickFrequency = 1;
-			BaseCellChance = 0.8f;
+			CellsPerFrame = 4000;
+			BaseCellChance = 1f;
 			ShockwaveSpeedCellsPerSecond = 25.0f;
 			VisualsFleckChance = 0.7f;
 			FireStartChancePerCell = 0.02f;
@@ -142,8 +142,8 @@ namespace ViolentTakeoff
 			VisualsFleckChance = Widgets.HorizontalSlider(listing.GetRect(22f), VisualsFleckChance, 0f, 1f);
 
 			listing.Gap(6f);
-			listing.Label("VT_TickFrequency_Label".Translate(TickFrequency.ToString()), tooltip: "VT_TickFrequency_Tooltip".Translate());
-			TickFrequency = (int)Widgets.HorizontalSlider(listing.GetRect(22f), TickFrequency, 1, 15);
+			listing.Label("VT_CellsPerFrame_Label".Translate(CellsPerFrame.ToString()), tooltip: "VT_CellsPerFrame_Tooltip".Translate());
+			CellsPerFrame = (int)Widgets.HorizontalSlider(listing.GetRect(22f), CellsPerFrame, 100, 6000, roundTo: 100);
 
 			listing.Gap(6f);
 			listing.Label("VT_BaseCellChance_Label".Translate(BaseCellChance.ToString("0.##")), tooltip: "VT_BaseCellChance_Tooltip".Translate());
