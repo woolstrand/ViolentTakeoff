@@ -9,38 +9,49 @@ namespace ViolentTakeoff
 	// Driven by real time (frame deltaTime), not ticks: the takeoff cutscene keeps the game paused.
 	// All cells are sorted by distance from the center once; the wave walks that list as the radius grows,
 	// so every cell is reached exactly once and no cell is skipped when the radius jumps.
-	// Two cursors walk the list: effects every frame (cheap, keeps the front smooth), destruction in batches
-	// (expensive; each batch dirties map mesh sections, and fewer batches mean fewer section rebuilds).
+	// Two cursors walk the list: effects (cheap) and destruction (expensive, limited to a time budget per frame).
+	// Smoothness beats speed: the ring waits for destruction to keep up instead of letting a frame stall,
+	// but never slows below MinSpeedFraction, so a very dense base can not freeze the animation.
 	public class ShockwaveInstance
 	{
 		private const float StartRadius = 10f;
 		private const int MaxThingsPerCell = 10;
-		private const float DestructionBatchInterval = 0.1f;
+		private const float MaxLead = 3f;
+		private const float MinSpeedFraction = 0.5f;
+		// Every destruction step dirties the map sections along the ring, and the engine rebuilds them on the next
+		// frame. 15 steps a second keeps each step under a cell at normal speeds (no visible chunks) while cutting
+		// those rebuilds to a quarter of per-frame destruction.
+		private const float DestructionInterval = 1f / 15f;
 
 		public readonly Map Map;
 		public readonly IntVec3 Center;
 
 		private readonly int[] cellIndices;
 		private readonly float[] cellDistances;
+		private readonly DestructionMode mode;
+		private readonly ScorchOverlay scorch;
+		private readonly ListerStash listerStash;
 		private int nextVisualCell;
 		private int nextDestroyCell;
 		private float radius = StartRadius;
-		private float sinceDestructionBatch;
+		private float sinceDestruction = DestructionInterval;
 
+		private readonly System.Diagnostics.Stopwatch frameWatch = new System.Diagnostics.Stopwatch();
 		private readonly List<Thing> tmpThings = new List<Thing>();
 
 		public float Radius => radius;
-		public int CellsDone => nextDestroyCell;
+		public int CellsDone => mode == DestructionMode.Destroy ? nextDestroyCell : nextVisualCell;
 		public int CellsTotal => cellIndices.Length;
-
-		public float MaxRadius => cellDistances.Length > 0 ? cellDistances[cellDistances.Length - 1] : 0f;
 
 		// area: cells the wave touches at all; null = whole map. The takeoff passes the part of the map its camera
 		// can show: anything else is never seen and is discarded with the map anyway.
-		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area = null)
+		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area, ScorchOverlay scorch)
 		{
 			Center = center;
 			Map = map;
+			mode = Config.Mode;
+			this.scorch = scorch;
+			if (mode == DestructionMode.Destroy && Config.FastBookkeeping) listerStash = new ListerStash(map);
 
 			CellRect rect = CellRect.WholeMap(map).ContractedBy(1);
 			if (area.HasValue) rect = area.Value.ClipInsideRect(rect);
@@ -49,54 +60,99 @@ namespace ViolentTakeoff
 			foreach (IntVec3 cell in rect)
 			{
 				float dist = (cell - center).LengthHorizontal;
-				if (dist < StartRadius) continue;
+				if (dist < StartRadius)
+				{
+					// The wave starts outside the ship's footprint; the ground it took off from is scorched at once.
+					scorch?.Add(cell);
+					continue;
+				}
 				indices.Add(map.cellIndices.CellToIndex(cell));
 				distances.Add(dist);
 			}
 			cellIndices = indices.ToArray();
 			cellDistances = distances.ToArray();
 			Array.Sort(cellDistances, cellIndices);
-
-			ShockwaveEffects.Ring(map, center, StartRadius, Config.ShockwaveSpeedCellsPerSecond, MaxRadius);
 		}
 
 		// Returns true when the wave has passed every cell.
 		public bool Update(float deltaTime)
 		{
-			radius += Config.ShockwaveSpeedCellsPerSecond * deltaTime;
+			float speed = Config.ShockwaveSpeedCellsPerSecond;
+			float target = radius + speed * deltaTime;
+
+			if (mode == DestructionMode.Destroy)
+			{
+				sinceDestruction += deltaTime;
+				if (sinceDestruction >= DestructionInterval)
+				{
+					sinceDestruction = 0f;
+					// Destroy a little ahead of the ring, so it does not have to wait between steps.
+					DestroyUpTo(target + speed * DestructionInterval);
+				}
+				float destroyedTo = nextDestroyCell < cellIndices.Length ? cellDistances[nextDestroyCell] : float.MaxValue;
+				radius = Mathf.Max(radius + speed * MinSpeedFraction * deltaTime, Mathf.Min(target, destroyedTo + MaxLead));
+			}
+			else
+			{
+				radius = target;
+			}
 
 			while (nextVisualCell < cellIndices.Length && cellDistances[nextVisualCell] <= radius)
 			{
 				Profile.Visuals.Start();
-				if (Rand.Chance(Config.BaseCellChance)) AddVisuals(Map.cellIndices.IndexToCell(cellIndices[nextVisualCell]));
+				IntVec3 cell = Map.cellIndices.IndexToCell(cellIndices[nextVisualCell]);
+				// Scorch covers every cell: gaps would show as bright squares of untouched ground.
+				scorch?.Add(cell);
+				if (Rand.Chance(Config.BaseCellChance)) AffectCellCheaply(cell);
 				Profile.Visuals.Stop();
 				nextVisualCell++;
 			}
 
-			sinceDestructionBatch += deltaTime;
-			if (sinceDestructionBatch >= DestructionBatchInterval || nextVisualCell >= cellIndices.Length)
+			bool destroyDone = mode != DestructionMode.Destroy || nextDestroyCell >= cellIndices.Length;
+			return destroyDone && nextVisualCell >= cellIndices.Length;
+		}
+
+		private void DestroyUpTo(float limit)
+		{
+			float budgetMs = Config.FrameBudgetMs;
+			frameWatch.Restart();
+			try
 			{
-				sinceDestructionBatch = 0f;
-				// Budget keeps a dense base from causing a hitch; leftover cells are picked up next batch.
-				int budget = Config.CellsPerFrame;
-				while (nextDestroyCell < nextVisualCell && budget-- > 0)
+				while (nextDestroyCell < cellIndices.Length && cellDistances[nextDestroyCell] <= limit
+					&& frameWatch.Elapsed.TotalMilliseconds < budgetMs)
 				{
 					if (Rand.Chance(Config.BaseCellChance)) Devastate(Map.cellIndices.IndexToCell(cellIndices[nextDestroyCell]));
 					nextDestroyCell++;
 				}
 			}
-			return nextDestroyCell >= cellIndices.Length;
+			finally
+			{
+				listerStash?.End();
+			}
+		}
+
+		// Effects, scorch and (in scorch mode) pawns: everything that runs with the visible ring itself.
+		private void AffectCellCheaply(IntVec3 cell)
+		{
+			AddVisuals(cell);
+			if (mode == DestructionMode.Scorch && Config.KillPawns) KillPawns(cell);
+		}
+
+		private void KillPawns(IntVec3 cell)
+		{
+			List<Thing> things = Map.thingGrid.ThingsListAtFast(cell);
+			for (int i = things.Count - 1; i >= 0; i--)
+			{
+				if (i < things.Count && things[i] is Pawn pawn && !pawn.Dead) pawn.Kill(null);
+			}
 		}
 
 		private void Devastate(IntVec3 cell)
 		{
 			// TEMP profiling (dev mode): split our per-cell cost by category.
-			if (!Config.VisualsOnly)
-			{
-				Profile.Things.Start();
-				AffectThings(cell);
-				Profile.Things.Stop();
-			}
+			Profile.Things.Start();
+			AffectThings(cell);
+			Profile.Things.Stop();
 			if (Config.AffectTerrain)
 			{
 				Profile.Terrain.Start();
@@ -105,18 +161,39 @@ namespace ViolentTakeoff
 			}
 		}
 
+		// Called right before anything is despawned, so batches that destroy nothing skip the lister shuffle.
+		private void BeforeDespawn()
+		{
+			if (listerStash != null && !listerStash.Active) listerStash.Begin();
+		}
+
 		private void AffectTerrain(IntVec3 cell)
 		{
 			var terrain = Map.terrainGrid.TerrainAt(cell);
 			if (terrain == TerrainDefOf.MechanoidPlatform || terrain == TerrainDefOf.OrbitalPlatform)
 			{
+				BeforeDespawn();
 				Map.terrainGrid.SetTerrain(cell, TerrainDefOf.Space);
 			}
 			else
 			{
-				if (Map.terrainGrid.CanRemoveTopLayerAt(cell)) Profile.TerrainChanged++;
+				if (!Map.terrainGrid.CanRemoveTopLayerAt(cell)) return;
+				// Removing a floor destroys the filth on it, and every despawn is costly; a dirty floor can stay.
+				if (Config.SkipFilthFloors && HasFilth(cell)) return;
+				Profile.TerrainChanged++;
+				BeforeDespawn();
 				Map.terrainGrid.RemoveTopLayer(cell, doLeavings: false);
 			}
+		}
+
+		private bool HasFilth(IntVec3 cell)
+		{
+			List<Thing> things = Map.thingGrid.ThingsListAtFast(cell);
+			for (int i = 0; i < things.Count; i++)
+			{
+				if (things[i].def.category == ThingCategory.Filth) return true;
+			}
+			return false;
 		}
 
 		private void AffectThings(IntVec3 cell)
@@ -146,25 +223,27 @@ namespace ViolentTakeoff
 				Profile.Count(thing);
 				if (thing is Plant)
 				{
-					if (Config.RemoveGrass) thing.Destroy(DestroyMode.Vanish);
+					if (Config.RemoveGrass) { BeforeDespawn(); thing.Destroy(DestroyMode.Vanish); }
 					continue;
 				}
 
 				if (thing is Pawn pawn)
 				{
-					if (Config.KillPawns) pawn.Kill(null);
+					if (Config.KillPawns) { BeforeDespawn(); pawn.Kill(null); }
 					continue;
 				}
 
 				// Vanish: no leavings or filth to spawn on a map that is about to be discarded.
 				if (thing.def.category == ThingCategory.Building && Config.DestroyBuildings)
 				{
+					BeforeDespawn();
 					thing.Destroy(DestroyMode.Vanish);
 					continue;
 				}
 
 				if (thing.def.category == ThingCategory.Item && Config.DestroyItems)
 				{
+					BeforeDespawn();
 					thing.Destroy(DestroyMode.Vanish);
 				}
 			}

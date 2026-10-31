@@ -52,7 +52,8 @@ namespace ViolentTakeoff
             CellRect? area = CutsceneViewArea(__instance, gravshipObj);
             MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell, area);
 
-			Verse.Log.Message("Started shockwave at " + originalCell + ", area " + (area?.ToString() ?? "whole map"));
+			Verse.Log.Message("Started shockwave at " + originalCell + ", area " + (area?.ToString() ?? "whole map") +
+				$", mode {Config.Mode}, fastBookkeeping {Config.FastBookkeeping}, keepDirtyFloors {Config.SkipFilthFloors}, speed {Config.ShockwaveSpeedCellsPerSecond}, budget {Config.FrameBudgetMs}ms");
 		}
 
 		// The cutscene camera stays on the capture center and zooms out to zoomRange.max (an orthographic half-height

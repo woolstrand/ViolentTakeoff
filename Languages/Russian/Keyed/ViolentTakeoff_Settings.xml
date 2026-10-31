@@ -20,14 +20,10 @@
 	<VT_VisualsFleckChance_Label>Шанс визуального эффекта: {0}</VT_VisualsFleckChance_Label>
 	<VT_VisualsFleckChance_Tooltip>Вероятность отобразить вспышку для каждой обработанной клетки.</VT_VisualsFleckChance_Tooltip>
 
-	<VT_CellsPerFrame_Label>Максимум клеток за кадр: {0}</VT_CellsPerFrame_Label>
-	<VT_CellsPerFrame_Tooltip>Сколько клеток ударная волна может обработать за один кадр. Меньшие значения сохраняют плавность над плотной застройкой, но волна там может отставать от заданной скорости.</VT_CellsPerFrame_Tooltip>
 
 	<VT_BaseCellChance_Label>Покрытие клеток: {0}</VT_BaseCellChance_Label>
 	<VT_BaseCellChance_Tooltip>Вероятность того, что клетка на пути волны будет затронута (разрушения и эффекты). Волна проходит каждую клетку ровно один раз; 1 не оставляет ничего целого, меньшие значения оставляют случайные клетки нетронутыми.</VT_BaseCellChance_Tooltip>
 
-	<VT_VisualsOnly_Label>Отключить разрушения, оставить только визуальные эффекты</VT_VisualsOnly_Label>
-	<VT_VisualsOnly_Tooltip>Пропускать разрушение и показывать только визуальные эффекты. Рекомендуется для слабых компьютеров.</VT_VisualsOnly_Tooltip>
 
 	<VT_RemoveGrass_Label>Удалять траву</VT_RemoveGrass_Label>
 	<VT_RemoveGrass_Tooltip>Удаляет растения и траву в затронутых клетках. Может значительно замедлить работу в густых биомах.</VT_RemoveGrass_Tooltip>
@@ -46,6 +42,25 @@
 
 	<VT_AffectTerrain_Label>Затрагивать территорию</VT_AffectTerrain_Label>
 	<VT_AffectTerrain_Tooltip>Удаляет полы и мосты, разрушает орбитальные платформы. Слабо влияет на производительность.</VT_AffectTerrain_Tooltip>
+
+	<VT_Mode_Label>Что ударная волна делает с картой:</VT_Mode_Label>
+	<VT_Mode_Destroy>Разрушать</VT_Mode_Destroy>
+	<VT_Mode_Destroy_Tooltip>По-настоящему уничтожает объекты и полы на пути волны, согласно настройкам ниже. Самый затратный режим на плотной застройке.</VT_Mode_Destroy_Tooltip>
+
+	<VT_Mode_Scorch>Выжигать (дёшево)</VT_Mode_Scorch>
+	<VT_Mode_Scorch_Tooltip>Ничего не уничтожается: пройденная земля закрашивается выжженной почвой и пеплом, скрывая всё под собой. Почти ничего не стоит, как бы ни была застроена карта. Пешки по-прежнему могут погибнуть.</VT_Mode_Scorch_Tooltip>
+
+	<VT_Mode_EffectsOnly>Только эффекты</VT_Mode_EffectsOnly>
+	<VT_Mode_EffectsOnly_Tooltip>Только вспышки, пыль, пламя и взрывы; карта остаётся как есть.</VT_Mode_EffectsOnly_Tooltip>
+
+	<VT_FrameBudget_Label>Время на шаг разрушения (мс): {0}</VT_FrameBudget_Label>
+	<VT_FrameBudget_Tooltip>Разрушение идёт шагами, 15 раз в секунду; это время, которое может занять один шаг. Меньшее значение сохраняет плавность; если разрушать нужно больше, волна замедляется (не более чем вдвое), а не дёргается.</VT_FrameBudget_Tooltip>
+
+	<VT_FastBookkeeping_Label>Быстрый учёт</VT_FastBookkeeping_Label>
+	<VT_FastBookkeeping_Tooltip>Ускоряет массовое разрушение: большие игровые списки объектов на карте, по которым иначе ищется каждый уничтоженный объект, временно откладываются. Отключите, если во время взлёта появляются ошибки.</VT_FastBookkeeping_Tooltip>
+
+	<VT_SkipFilthFloors_Label>Не трогать грязные полы</VT_SkipFilthFloors_Label>
+	<VT_SkipFilthFloors_Tooltip>Не снимать полы, на которых есть грязь. Снятие такого пола уничтожает и грязь, а это стоит столько же, сколько уничтожение объекта.</VT_SkipFilthFloors_Tooltip>
 
 	<VT_Settings_Category>Violent Takeoff</VT_Settings_Category>
 </LanguageData> 

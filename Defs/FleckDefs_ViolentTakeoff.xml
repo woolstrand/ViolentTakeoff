@@ -71,27 +71,4 @@
     <fadeOutTime>1.5</fadeOutTime>
   </FleckDef>
 
-  <!-- Distortion ring riding the shockwave front. growthRate is set from the speed setting at launch. -->
-  <FleckDef ParentName="FleckBase">
-    <defName>VT_ShockwaveRing</defName>
-    <realTime>true</realTime>
-    <altitudeLayer>MoteOverheadLow</altitudeLayer>
-    <drawOffscreen>true</drawOffscreen>
-    <fadeInTime>0.1</fadeInTime>
-    <solidTime>10</solidTime>
-    <fadeOutTime>1</fadeOutTime>
-    <growthRate>50</growthRate>
-    <graphicData>
-      <graphicClass>Graphic_FleckPulse</graphicClass>
-      <texPath>Things/Mote/Black</texPath>
-      <shaderType>MoteLargeDistortionWave</shaderType>
-      <shaderParameters>
-        <_DistortionTex>/Things/Mote/PsychicDistortionCurrents</_DistortionTex>
-        <_NoiseTex>/Things/Mote/PsycastNoise</_NoiseTex>
-        <_distortionIntensity>0.12</_distortionIntensity>
-        <_brightnessMultiplier>2.5</_brightnessMultiplier>
-      </shaderParameters>
-      <drawSize>1.0</drawSize>
-    </graphicData>
-  </FleckDef>
 </Defs>

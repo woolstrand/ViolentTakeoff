@@ -16,16 +16,6 @@ namespace ViolentTakeoff
 
 		private static float lastExplosionSoundTime = float.MinValue;
 
-		public static void Ring(Map map, IntVec3 center, float startRadius, float speed, float maxRadius)
-		{
-			FleckDef def = VT_FleckDefOf.VT_ShockwaveRing;
-			// Growth is a def-level rate (draw size per second); the ring's diameter grows twice as fast as the radius.
-			def.growthRate = speed * 2f;
-			FleckCreationData data = FleckMaker.GetDataStatic(center.ToVector3Shifted(), map, def, startRadius * 2f);
-			data.solidTimeOverride = Mathf.Max(0f, (maxRadius - startRadius) / Mathf.Max(speed, 0.01f) - def.fadeInTime);
-			map.flecks.CreateFleck(data);
-		}
-
 		// Same as vanilla FleckMaker.ThrowExplosionCell (scale 1, dust puff 70% of the time), on realTime flecks.
 		public static void CellFlash(Map map, IntVec3 cell)
 		{

@@ -11,7 +11,6 @@ namespace ViolentTakeoff
 		public static FleckDef VT_DustPuff;
 		public static FleckDef VT_Smoke;
 		public static FleckDef VT_FireGlow;
-		public static FleckDef VT_ShockwaveRing;
 
 		static VT_FleckDefOf()
 		{

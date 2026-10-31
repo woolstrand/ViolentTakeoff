@@ -20,14 +20,10 @@
 	<VT_VisualsFleckChance_Label>Visual effects chance: {0}</VT_VisualsFleckChance_Label>
 	<VT_VisualsFleckChance_Tooltip>Chance to display a flash on each processed cell.</VT_VisualsFleckChance_Tooltip>
 
-	<VT_CellsPerFrame_Label>Max cells per frame: {0}</VT_CellsPerFrame_Label>
-	<VT_CellsPerFrame_Tooltip>Upper limit of cells the shockwave processes in a single frame. Lower values keep the frame rate smooth over dense bases, but the wave may fall behind its nominal speed there.</VT_CellsPerFrame_Tooltip>
 
 	<VT_BaseCellChance_Label>Cell coverage: {0}</VT_BaseCellChance_Label>
 	<VT_BaseCellChance_Tooltip>Chance that a cell in the shockwave's path is affected (destruction and effects). The wave reaches every cell exactly once; 1 leaves nothing intact, lower values leave random cells untouched.</VT_BaseCellChance_Tooltip>
 
-	<VT_VisualsOnly_Label>No real destruction, visuals only</VT_VisualsOnly_Label>
-	<VT_VisualsOnly_Tooltip>Skip all destruction and show only visual effects. Recommended for slow computers.</VT_VisualsOnly_Tooltip>
 
 	<VT_RemoveGrass_Label>Remove grass</VT_RemoveGrass_Label>
 	<VT_RemoveGrass_Tooltip>Removes plants and grass in affected cells. Can significantly slow down in lush biomes.</VT_RemoveGrass_Tooltip>
@@ -46,6 +42,25 @@
 
 	<VT_AffectTerrain_Label>Affect terrain</VT_AffectTerrain_Label>
 	<VT_AffectTerrain_Tooltip>Removes floors or bridges, destroys orbital platforms.</VT_AffectTerrain_Tooltip>
+
+	<VT_Mode_Label>What the shockwave does to the map:</VT_Mode_Label>
+	<VT_Mode_Destroy>Destroy</VT_Mode_Destroy>
+	<VT_Mode_Destroy_Tooltip>Really destroys things and floors in the shockwave's path, per the toggles below. Most expensive on dense bases.</VT_Mode_Destroy_Tooltip>
+
+	<VT_Mode_Scorch>Scorch (cheap)</VT_Mode_Scorch>
+	<VT_Mode_Scorch_Tooltip>Nothing is destroyed: the swept ground is painted over with scorched earth and ash, hiding everything under it. Costs almost nothing however crowded the map is. Pawns can still be killed.</VT_Mode_Scorch_Tooltip>
+
+	<VT_Mode_EffectsOnly>Effects only</VT_Mode_EffectsOnly>
+	<VT_Mode_EffectsOnly_Tooltip>Flashes, dust, flames and explosions only; the map is left as is.</VT_Mode_EffectsOnly_Tooltip>
+
+	<VT_FrameBudget_Label>Destruction time per step (ms): {0}</VT_FrameBudget_Label>
+	<VT_FrameBudget_Tooltip>Destruction runs in 15 steps per second; this is how long each step may take. Lower keeps the animation smooth; where there is more to destroy than fits, the wave slows down (to at most half its speed) instead of stuttering.</VT_FrameBudget_Tooltip>
+
+	<VT_FastBookkeeping_Label>Fast bookkeeping</VT_FastBookkeeping_Label>
+	<VT_FastBookkeeping_Tooltip>Speeds up mass destruction by temporarily setting aside the game's big lists of things on the map, which every destroyed object otherwise searches. Turn off if you see errors during takeoff.</VT_FastBookkeeping_Tooltip>
+
+	<VT_SkipFilthFloors_Label>Keep dirty floors</VT_SkipFilthFloors_Label>
+	<VT_SkipFilthFloors_Tooltip>Do not remove floors that have filth on them. Removing such a floor also destroys the filth, which costs as much as destroying an object.</VT_SkipFilthFloors_Tooltip>
 
 	<VT_Settings_Category>Violent Takeoff</VT_Settings_Category>
 </LanguageData> 

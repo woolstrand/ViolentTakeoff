@@ -11,6 +11,8 @@ namespace ViolentTakeoff
 		private const float MaxFrameDelta = 0.1f;
 
 		private readonly List<ShockwaveInstance> active = new List<ShockwaveInstance>();
+		// Stays drawn after the wave is done, until the map is gone.
+		private ScorchOverlay scorch;
 
 		public MapComponent_ViolentTakeoff(Map map) : base(map)
 		{
@@ -19,6 +21,7 @@ namespace ViolentTakeoff
 		// MapComponentUpdate runs every frame even while the game is paused, unlike MapComponentTick.
 		public override void MapComponentUpdate()
 		{
+			scorch?.Draw();
 			if (active.Count == 0) return;
 
 			float deltaTime = Mathf.Min(Time.deltaTime, MaxFrameDelta);
@@ -68,12 +71,14 @@ namespace ViolentTakeoff
 		public void StartShockwave(IntVec3 center, CellRect? area = null)
 		{
 			map.fogGrid.ClearAllFog();
-			active.Add(new ShockwaveInstance(center, map, area));
+			if (Config.Mode == DestructionMode.Scorch && scorch == null) scorch = new ScorchOverlay(map);
+			active.Add(new ShockwaveInstance(center, map, area, scorch));
 		}
 
 		public void StopAll()
 		{
 			active.Clear();
+			scorch = null;
 		}
 
 		public static MapComponent_ViolentTakeoff For(Map map)
