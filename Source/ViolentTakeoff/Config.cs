@@ -39,5 +39,7 @@ namespace ViolentTakeoff
 
 	public static class DevastationManager {
 		public static bool SuppressRoofChecks = false;
+		// Set once the gravship (with its pawns) has been removed from the map; time may flow only after that.
+		public static bool ShipDeparted = false;
 	}
 } 

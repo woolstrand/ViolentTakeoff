@@ -8,8 +8,12 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/Dotnet.gitignore
 
 # Rimworld mod
-Assemblies/*
-!Assemblies/ViolentTakeoff.dll
+# Game reference DLLs (local only, see README)
+References/
+# Only the built mod assembly is committed per game version
+/Assemblies/
+1.*/Assemblies/*
+!1.*/Assemblies/ViolentTakeoff.dll
 
 # Build results
 [Dd]ebug/

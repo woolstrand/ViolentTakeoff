@@ -46,6 +46,7 @@ namespace ViolentTakeoff
             Verse.Log.Message("Got map");
 
             DevastationManager.SuppressRoofChecks = true;
+            DevastationManager.ShipDeparted = true;
             MapComponent_ViolentTakeoff.Ensure(map)?.StartShockwave(originalCell);
 
 			Verse.Log.Message("Started shockwave at " + originalCell);
@@ -55,13 +56,16 @@ namespace ViolentTakeoff
 		[HarmonyPostfix]
 		private static void Postfix_TakeoffEnded(WorldComponent_GravshipController __instance) {
 			DevastationManager.SuppressRoofChecks = false;
+			DevastationManager.ShipDeparted = false;
 		}
 
         [HarmonyPatch(typeof(TickManager), nameof(TickManager.ForcePaused), MethodType.Getter)]
 		[HarmonyPostfix]
 		private static void Postfix_TickManager_ForcePaused(ref bool __result)
 		{
-			if (!WorldComponent_GravshipController.CutsceneInProgress)
+			// CutsceneInProgress turns on before the ship's pawns are despawned (capture, pan, delay); unpausing
+			// in that window lets colonists walk off the ship and get left behind.
+			if (!WorldComponent_GravshipController.CutsceneInProgress || !DevastationManager.ShipDeparted)
 				return;
 
 			bool otherPause = false;

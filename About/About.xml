@@ -5,6 +5,7 @@
 	<modIconPath IgnoreIfNoMatchingField="True">ViolentTakeoff/Logo</modIconPath>
 	<supportedVersions>
 		<li>1.6</li>
+		<li>1.7</li>
 	</supportedVersions>
 
 	<description>When I launched my gravship for the first time, I was so eager to see how exactly does it destroy the map during takeoff, but I saw.. well, I don't need to explain, you saw it too. "Is it a joke?! - I asked myself, - It's no good for me at all. I need to fix that." And a few days later this mod was born.</description>
