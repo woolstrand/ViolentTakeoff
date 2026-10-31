@@ -31,16 +31,16 @@
   </FleckDef>
 
   <FleckDef ParentName="FleckBase_Thrown">
-    <defName>VT_DustPuffThick</defName>
+    <defName>VT_DustPuff</defName>
     <realTime>true</realTime>
     <graphicData>
       <texPath>Things/Mote/DustPuff</texPath>
       <renderInstanced>true</renderInstanced>
     </graphicData>
     <altitudeLayer>MoteOverhead</altitudeLayer>
-    <fadeInTime>0.1</fadeInTime>
-    <solidTime>0.6</solidTime>
-    <fadeOutTime>1.4</fadeOutTime>
+    <fadeInTime>0.04</fadeInTime>
+    <solidTime>0.03</solidTime>
+    <fadeOutTime>1</fadeOutTime>
   </FleckDef>
 
   <FleckDef ParentName="FleckBase_Thrown">
@@ -67,7 +67,7 @@
     </graphicData>
     <altitudeLayer>MoteOverhead</altitudeLayer>
     <fadeInTime>0.3</fadeInTime>
-    <solidTime>6</solidTime>
+    <solidTime>2</solidTime>
     <fadeOutTime>1.5</fadeOutTime>
   </FleckDef>
 

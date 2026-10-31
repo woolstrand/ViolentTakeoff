@@ -26,17 +26,23 @@ namespace ViolentTakeoff
 			map.flecks.CreateFleck(data);
 		}
 
+		// Same as vanilla FleckMaker.ThrowExplosionCell (scale 1, dust puff 70% of the time), on realTime flecks.
 		public static void CellFlash(Map map, IntVec3 cell)
 		{
-			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_ExplosionFlash, Rand.Range(Config.FleckScaleMin, Config.FleckScaleMax));
+			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_ExplosionFlash);
 			data.rotation = 90 * Rand.RangeInclusive(0, 3);
 			data.instanceColor = Color.yellow;
 			map.flecks.CreateFleck(data);
+			if (Rand.Value < 0.7f)
+			{
+				DustPuff(map, cell, 1.2f);
+			}
 		}
 
-		public static void DustPuff(Map map, IntVec3 cell)
+		public static void DustPuff(Map map, IntVec3 cell, float scale)
 		{
-			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_DustPuffThick, Rand.Range(1.2f, 2f));
+			Vector3 loc = cell.ToVector3() + new Vector3(Rand.Value, 0f, Rand.Value);
+			FleckCreationData data = FleckMaker.GetDataStatic(loc, map, VT_FleckDefOf.VT_DustPuff, 1.9f * scale);
 			data.rotationRate = Rand.Range(-60, 60);
 			data.velocityAngle = Rand.Range(0, 360);
 			data.velocitySpeed = Rand.Range(0.6f, 0.75f);
@@ -55,7 +61,7 @@ namespace ViolentTakeoff
 		public static void Fire(Map map, IntVec3 cell, float size)
 		{
 			Vector3 loc = cell.ToVector3Shifted() + new Vector3(Rand.Value - 0.5f, 0f, Rand.Value - 0.5f);
-			FleckCreationData data = FleckMaker.GetDataStatic(loc, map, VT_FleckDefOf.VT_FireGlow, Rand.Range(2f, 3f) * size);
+			FleckCreationData data = FleckMaker.GetDataStatic(loc, map, VT_FleckDefOf.VT_FireGlow, Rand.Range(1f, 1.5f) * size);
 			data.rotationRate = Rand.Range(-3f, 3f);
 			data.velocityAngle = Rand.Range(0, 360);
 			data.velocitySpeed = 0.12f;

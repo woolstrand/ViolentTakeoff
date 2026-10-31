@@ -20,10 +20,6 @@ namespace ViolentTakeoff
 		public static bool AffectTerrain => Mod_ViolentTakeoff.Settings?.AffectTerrain ?? true;
 
 
-		// Visuals (not exposed to user)
-		public const float DustPuffChance = 0.05f;
-		public const float FleckScaleMin = 1.2f;
-		public const float FleckScaleMax = 5.2f;
 	}
 
 	public static class DevastationManager {

@@ -1,6 +1,7 @@
 using HarmonyLib;
 using RimWorld;
 using RimWorld.Planet;
+using UnityEngine;
 using Verse;
 
 namespace ViolentTakeoff
@@ -46,10 +47,46 @@ namespace ViolentTakeoff
             Verse.Log.Message("Got map");
 
             DevastationManager.SuppressRoofChecks = true;
+            SoftenCutsceneShake();
             // The game stays paused for the whole cutscene; the shockwave animates on real time.
-            MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell);
+            CellRect? area = CutsceneViewArea(__instance, gravshipObj);
+            MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell, area);
 
-			Verse.Log.Message("Started shockwave at " + originalCell);
+			Verse.Log.Message("Started shockwave at " + originalCell + ", area " + (area?.ToString() ?? "whole map"));
+		}
+
+		// The cutscene camera stays on the capture center and zooms out to zoomRange.max (an orthographic half-height
+		// in cells). Returns the most it will ever show, or null (whole map) if the player can move the camera.
+		private static CellRect? CutsceneViewArea(WorldComponent_GravshipController controller, object gravship)
+		{
+			if (Find.CameraDriver.config.gravshipFreeCam) return null;
+			var capture = AccessTools.Field(gravship.GetType(), "capture")?.GetValue(gravship) as Capture;
+			var zoomField = AccessTools.Field(controller.GetType(), "zoomRange");
+			if (capture == null || zoomField == null) return null;
+			float halfHeight = ((FloatRange)zoomField.GetValue(controller)).max;
+			float halfWidth = halfHeight * UI.screenWidth / UI.screenHeight;
+			const float Margin = 4f;
+			Vector3 c = capture.captureCenter;
+			return CellRect.FromLimits(
+				Mathf.FloorToInt(c.x - halfWidth - Margin), Mathf.FloorToInt(c.z - halfHeight - Margin),
+				Mathf.CeilToInt(c.x + halfWidth + Margin), Mathf.CeilToInt(c.z + halfHeight + Margin));
+		}
+
+		// Vanilla starts the cutscene with DoShake(0.2f, 120). Its duration counts game ticks, which stand still while
+		// the cutscene keeps the game paused, so it shakes at full strength until takeoff ends. Swap it for a weaker one.
+		private const float CutsceneShakeMagnitude = 0.02f;
+		private static readonly AccessTools.FieldRef<CameraShaker, System.Collections.IList> ExtendedShakeRequests =
+			AccessTools.FieldRefAccess<CameraShaker, System.Collections.IList>("extendedShakeRequests");
+
+		private static void SoftenCutsceneShake()
+		{
+			CameraShaker shaker = Find.CameraDriver?.shaker;
+			if (shaker == null) return;
+			System.Collections.IList requests = ExtendedShakeRequests(shaker);
+			if (requests != null && requests.Count > 0)
+				requests.RemoveAt(requests.Count - 1); // the one BeginTakeoffCutscene just added
+			shaker.StopAllShaking();
+			shaker.DoShake(CutsceneShakeMagnitude, 120);
 		}
 
 		[HarmonyPatch(typeof(WorldComponent_GravshipController), "TakeoffEnded")]
