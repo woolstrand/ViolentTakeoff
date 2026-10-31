@@ -14,3 +14,7 @@ Game reference DLLs are not committed. Put them into:
 - `References/1.7/`: `Assembly-CSharp.dll`, `UnityStubs.dll`, `Waylith.dll` from a 1.7 install, `0Harmony.dll` from Harmony's `1.7` folder
 
 or pass `-p:RefDir16=...` / `-p:RefDir17=...`.
+
+The build then runs `deploy.sh`, which copies the mod into `RimWorld/Mods/ViolentTakeoff` (macOS Steam path by
+default, override with `VT_DEPLOY_DIR`). Skip it with `-p:Deploy=false`. Disable the Workshop copy of the mod while
+the local one is installed: both share the same package ID.
