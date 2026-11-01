@@ -17,15 +17,15 @@ namespace ViolentTakeoff
 	{
 		public float ShockwaveSpeedCellsPerSecond = 12f;
 		public float FireStartChancePerCell = 0.01f;
-		public float ExplosionChancePerCell = 0.0015f;
-		public float FireSize = 2f;
+		public float ExplosionChancePerCell = 0.01f;
+		public float FireSize = 2.4f;
 		public float VisualsFleckChance = 0.8f;
 		public float FrameBudgetMs = 6f;
 		public float BaseCellChance = 0.95f;
 		public DestructionMode Mode = DestructionMode.Destroy;
 		public bool FastBookkeeping = true;
 		public bool SkipFilthFloors = true;
-		public bool RemoveGrass = false;
+		public bool RemoveGrass = true;
 		public bool DestroyItems = true;
 		public bool DestroyBuildings = true;
 		public bool KillPawns = true;
@@ -40,15 +40,15 @@ namespace ViolentTakeoff
 		{
 			Scribe_Values.Look(ref ShockwaveSpeedCellsPerSecond, "ShockwaveSpeed", 12f);
 			Scribe_Values.Look(ref FireStartChancePerCell, "FireStartChancePerCell", 0.01f);
-			Scribe_Values.Look(ref ExplosionChancePerCell, "ExplosionChancePerCell", 0.0015f);
-			Scribe_Values.Look(ref FireSize, "FireSize", 2.0f);
+			Scribe_Values.Look(ref ExplosionChancePerCell, "ExplosionChancePerCell", 0.01f);
+			Scribe_Values.Look(ref FireSize, "FireSize", 2.4f);
 			Scribe_Values.Look(ref VisualsFleckChance, "VisualsFleckChance", 0.8f);
 			Scribe_Values.Look(ref FrameBudgetMs, "FrameBudgetMs", 6f);
 			Scribe_Values.Look(ref BaseCellChance, "BaseCellCoverage", 0.95f);
 			Scribe_Values.Look(ref Mode, "Mode", DestructionMode.Destroy);
 			Scribe_Values.Look(ref FastBookkeeping, "FastBookkeeping", true);
 			Scribe_Values.Look(ref SkipFilthFloors, "SkipFilthFloors", true);
-			Scribe_Values.Look(ref RemoveGrass, "RemoveGrass", false);
+			Scribe_Values.Look(ref RemoveGrass, "RemoveGrass", true);
 			Scribe_Values.Look(ref DestroyItems, "DestroyItems", true);
 			Scribe_Values.Look(ref DestroyBuildings, "DestroyBuildings", true);
 			Scribe_Values.Look(ref KillPawns, "KillPawns", true);
@@ -97,9 +97,9 @@ namespace ViolentTakeoff
 			ShockwaveSpeedCellsPerSecond = 12f;
 			VisualsFleckChance = 0.8f;
 			FireStartChancePerCell = 0.01f;
-			ExplosionChancePerCell = 0.0015f;
-			FireSize = 2.0f;
-			RemoveGrass = false;
+			ExplosionChancePerCell = 0.01f;
+			FireSize = 2.4f;
+			RemoveGrass = true;
 			DestroyItems = true;
 			DestroyBuildings = true;
 			KillPawns = true;
@@ -117,8 +117,8 @@ namespace ViolentTakeoff
 			ShockwaveSpeedCellsPerSecond = 12f;
 			VisualsFleckChance = 0.7f;
 			FireStartChancePerCell = 0.02f;
-			ExplosionChancePerCell = 0.0025f;
-			FireSize = 2.0f;
+			ExplosionChancePerCell = 0.015f;
+			FireSize = 2.4f;
 			RemoveGrass = true;
 			DestroyItems = true;
 			DestroyBuildings = true;

@@ -21,24 +21,24 @@ namespace ViolentTakeoff
 
 		// Ring flashes (additive glow): color times brightness, alpha fades them over solid + fade seconds.
 		public float FlashScaleMin = 1.3f, FlashScaleMax = 2f;
-		public float FlashSolid = 0.12f, FlashFade = 0.35f;
-		public float FlashR = 1f, FlashG = 0.92f, FlashB = 0.02f, FlashBrightness = 1f;
+		public float FlashSolid = 0.1f, FlashFade = 0.6f;
+		public float FlashR = 1f, FlashG = 0.84f, FlashB = 0.35f, FlashBrightness = 1.34f;
 		// Dust puffs thrown with a flash.
 		public float DustChance = 0.5f, DustScale = 1.2f, DustFade = 1f, DustBrightness = 1f;
 		// Explosions: center flash, colored blast per cell, smoke.
-		public float ExplosionRadius = 3.5f, ExplosionFlashScale = 6f, ExplosionFlashBrightness = 1f;
-		public float BlastR = 1f, BlastG = 0.5f, BlastB = 0.3f, BlastBrightness = 1f, BlastFade = 0.3f;
+		public float ExplosionRadius = 5.5f, ExplosionFlashScale = 6f, ExplosionFlashBrightness = 1.5f;
+		public float BlastR = 1f, BlastG = 0.5f, BlastB = 0.3f, BlastBrightness = 1.39f, BlastFade = 0.29f;
 		public float ExplosionSmokeCount = 4f;
 		// Flames (fire glow) and their smoke.
-		public float FireScaleMin = 1f, FireScaleMax = 1.5f, FireSolid = 2f, FireFade = 1.5f, FireBrightness = 1f;
+		public float FireScaleMin = 1.3f, FireScaleMax = 1.9f, FireSolid = 2f, FireFade = 1.5f, FireBrightness = 1f;
 		public float SmokeBrightness = 1f;
 		// Walls (roof holders): always destroyed up to WallFullRadius, then the chance falls linearly to
 		// WallEdgeChance at the map edge (half the map size from the center).
 		public float WallFullRadius = 25f, WallEdgeChance = 0.3f;
 		// Scorch mode.
-		public float ScorchBrightness = 0.5f, AshChance = 0.35f, AshAlpha = 0.85f;
+		public float ScorchBrightness = 0.5f, AshChance = 0.5f, AshAlpha = 0.85f;
 		// Camera shake during the cutscene (vanilla: 0.2).
-		public float ShakeMagnitude = 0.02f;
+		public float ShakeMagnitude = 0.04f;
 
 		private static readonly List<Knob> Knobs = new List<Knob>();
 
