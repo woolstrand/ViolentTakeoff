@@ -33,6 +33,7 @@ namespace ViolentTakeoff
 		private readonly float[] cellDistances;
 		private readonly DestructionMode mode;
 		private readonly ScorchOverlay scorch;
+		private readonly EffectsRunner effects;
 		private readonly ListerStash listerStash;
 		private readonly bool holdStash;
 		private int nextVisualCell;
@@ -52,8 +53,9 @@ namespace ViolentTakeoff
 		// can show: anything else is never seen and is discarded with the map anyway.
 		// duringTakeoff: the game stays paused and the map is discarded right after, so the lister lists can stay set
 		// aside for the whole wave (restored by Finish). Otherwise (debug tool, time may run) only per step.
-		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area, ScorchOverlay scorch, bool duringTakeoff)
+		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area, ScorchOverlay scorch, EffectsRunner effects, bool duringTakeoff)
 		{
+			this.effects = effects;
 			holdStash = duringTakeoff;
 			Center = center;
 			Map = map;
@@ -305,11 +307,11 @@ namespace ViolentTakeoff
 			}
 			if (Rand.Chance(Config.FireStartChancePerCell))
 			{
-				ShockwaveEffects.Fire(Map, cell, Config.FireSize);
+				effects?.StartFire(cell, Config.FireSize);
 			}
 			if (Rand.Chance(Config.ExplosionChancePerCell))
 			{
-				ShockwaveEffects.Explosion(Map, cell);
+				effects?.StartExplosion(cell);
 			}
 		}
 	}

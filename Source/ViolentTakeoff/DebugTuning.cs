@@ -29,6 +29,10 @@ namespace ViolentTakeoff
 		public float ExplosionRadius = 5.5f, ExplosionFlashScale = 6f, ExplosionFlashBrightness = 1.5f;
 		public float BlastR = 1f, BlastG = 0.5f, BlastB = 0.3f, BlastBrightness = 1.39f, BlastFade = 0.29f;
 		public float ExplosionSmokeCount = 4f;
+		// Each explosion's radius is the average times 1 +- spread; the blast expands from the center at this speed.
+		public float ExplosionSizeSpread = 0.4f, ExplosionSpeed = 40f;
+		// Flickering flames left in the wake (vanilla fire textures): up to this many per fire, living this long.
+		public float FlamesPerFire = 3f, FlameScale = 1f, FlameLifeMin = 6f, FlameLifeMax = 14f;
 		// Flames (fire glow) and their smoke.
 		public float FireScaleMin = 1.3f, FireScaleMax = 1.9f, FireSolid = 2f, FireFade = 1.5f, FireBrightness = 1f;
 		public float SmokeBrightness = 1f;
@@ -56,7 +60,9 @@ namespace ViolentTakeoff
 			Add("Dust", nameof(DustScale), "scale", 0.2f, 4f, t => t.DustScale, (t, v) => t.DustScale = v);
 			Add("Dust", nameof(DustFade), "fade time (s)", 0.1f, 4f, t => t.DustFade, (t, v) => t.DustFade = v);
 			Add("Dust", nameof(DustBrightness), "brightness", 0f, 2f, t => t.DustBrightness, (t, v) => t.DustBrightness = v);
-			Add("Explosions", nameof(ExplosionRadius), "radius", 1f, 8f, t => t.ExplosionRadius, (t, v) => t.ExplosionRadius = v);
+			Add("Explosions", nameof(ExplosionRadius), "average radius", 1f, 12f, t => t.ExplosionRadius, (t, v) => t.ExplosionRadius = v);
+			Add("Explosions", nameof(ExplosionSizeSpread), "radius spread (+-, fraction of average)", 0f, 1f, t => t.ExplosionSizeSpread, (t, v) => t.ExplosionSizeSpread = v);
+			Add("Explosions", nameof(ExplosionSpeed), "expansion speed (cells/s)", 2f, 120f, t => t.ExplosionSpeed, (t, v) => t.ExplosionSpeed = v);
 			Add("Explosions", nameof(ExplosionFlashScale), "center flash scale (x radius)", 0f, 12f, t => t.ExplosionFlashScale, (t, v) => t.ExplosionFlashScale = v);
 			Add("Explosions", nameof(ExplosionFlashBrightness), "center flash brightness", 0f, 3f, t => t.ExplosionFlashBrightness, (t, v) => t.ExplosionFlashBrightness = v);
 			Add("Explosions", nameof(BlastR), "blast red", 0f, 1f, t => t.BlastR, (t, v) => t.BlastR = v);
@@ -65,11 +71,15 @@ namespace ViolentTakeoff
 			Add("Explosions", nameof(BlastBrightness), "blast brightness", 0f, 3f, t => t.BlastBrightness, (t, v) => t.BlastBrightness = v);
 			Add("Explosions", nameof(BlastFade), "blast fade time (s)", 0f, 2f, t => t.BlastFade, (t, v) => t.BlastFade = v);
 			Add("Explosions", nameof(ExplosionSmokeCount), "smoke puffs", 0f, 12f, t => t.ExplosionSmokeCount, (t, v) => t.ExplosionSmokeCount = v);
-			Add("Flames", nameof(FireScaleMin), "scale min (x fire size)", 0.1f, 4f, t => t.FireScaleMin, (t, v) => t.FireScaleMin = v);
-			Add("Flames", nameof(FireScaleMax), "scale max (x fire size)", 0.1f, 4f, t => t.FireScaleMax, (t, v) => t.FireScaleMax = v);
-			Add("Flames", nameof(FireSolid), "solid time (s)", 0f, 8f, t => t.FireSolid, (t, v) => t.FireSolid = v);
-			Add("Flames", nameof(FireFade), "fade time (s)", 0f, 4f, t => t.FireFade, (t, v) => t.FireFade = v);
-			Add("Flames", nameof(FireBrightness), "brightness", 0f, 3f, t => t.FireBrightness, (t, v) => t.FireBrightness = v);
+			Add("Flames", nameof(FlamesPerFire), "flames per fire (max)", 1f, 9f, t => t.FlamesPerFire, (t, v) => t.FlamesPerFire = v);
+			Add("Flames", nameof(FlameScale), "flame size multiplier", 0.2f, 3f, t => t.FlameScale, (t, v) => t.FlameScale = v);
+			Add("Flames", nameof(FlameLifeMin), "flame life min (s)", 0.5f, 30f, t => t.FlameLifeMin, (t, v) => t.FlameLifeMin = v);
+			Add("Flames", nameof(FlameLifeMax), "flame life max (s)", 0.5f, 30f, t => t.FlameLifeMax, (t, v) => t.FlameLifeMax = v);
+			Add("Flames", nameof(FireScaleMin), "glow scale min (x fire size)", 0.1f, 4f, t => t.FireScaleMin, (t, v) => t.FireScaleMin = v);
+			Add("Flames", nameof(FireScaleMax), "glow scale max (x fire size)", 0.1f, 4f, t => t.FireScaleMax, (t, v) => t.FireScaleMax = v);
+			Add("Flames", nameof(FireSolid), "glow solid time (s)", 0f, 8f, t => t.FireSolid, (t, v) => t.FireSolid = v);
+			Add("Flames", nameof(FireFade), "glow fade time (s)", 0f, 4f, t => t.FireFade, (t, v) => t.FireFade = v);
+			Add("Flames", nameof(FireBrightness), "glow brightness", 0f, 3f, t => t.FireBrightness, (t, v) => t.FireBrightness = v);
 			Add("Flames", nameof(SmokeBrightness), "smoke brightness", 0f, 2f, t => t.SmokeBrightness, (t, v) => t.SmokeBrightness = v);
 			Add("Walls", nameof(WallFullRadius), "always destroyed within (cells)", 0f, 150f, t => t.WallFullRadius, (t, v) => t.WallFullRadius = v);
 			Add("Walls", nameof(WallEdgeChance), "chance at map edge", 0f, 1f, t => t.WallEdgeChance, (t, v) => t.WallEdgeChance = v);

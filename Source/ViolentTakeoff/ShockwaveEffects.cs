@@ -61,7 +61,8 @@ namespace ViolentTakeoff
 			map.flecks.CreateFleck(data);
 		}
 
-		public static void Fire(Map map, IntVec3 cell, float size)
+		// Flames (drawn by EffectsRunner) light up and smoke through this, like a vanilla fire does.
+		public static void FireGlow(Map map, IntVec3 cell, float size)
 		{
 			Vector3 loc = cell.ToVector3Shifted() + new Vector3(Rand.Value - 0.5f, 0f, Rand.Value - 0.5f);
 			FleckCreationData data = FleckMaker.GetDataStatic(loc, map, VT_FleckDefOf.VT_FireGlow, Rand.Range(T.FireScaleMin, T.FireScaleMax) * size);
@@ -73,11 +74,11 @@ namespace ViolentTakeoff
 			Smoke(map, loc, size * 0.5f);
 		}
 
-		// Mimics Explosion + DamageWorker visuals: center flash, colored blast per cell, smoke, sound.
-		public static void Explosion(Map map, IntVec3 center)
+		// The instant part of an explosion (center flash, smoke, sound), like vanilla's ExplosionStart.
+		// The blast itself spreads outwards over time: EffectsRunner calls BlastCell as it reaches each cell.
+		public static void ExplosionStart(Map map, IntVec3 center, float radius)
 		{
 			float now = Time.realtimeSinceStartup;
-			float radius = T.ExplosionRadius;
 			Vector3 centerLoc = center.ToVector3Shifted();
 			FleckCreationData flash = FleckMaker.GetDataStatic(centerLoc, map, VT_FleckDefOf.VT_ExplosionFlash, radius * T.ExplosionFlashScale);
 			flash.instanceColor = Color.white * T.ExplosionFlashBrightness;
@@ -87,21 +88,20 @@ namespace ViolentTakeoff
 			{
 				Smoke(map, centerLoc + Gen.RandomHorizontalVector(radius * 0.7f), radius * 0.6f);
 			}
-			Color colorCenter = T.BlastColorCenter, colorEdge = T.BlastColorEdge;
-			foreach (IntVec3 cell in GenRadial.RadialCellsAround(center, radius, useCenter: true))
-			{
-				if (!cell.InBounds(map)) continue;
-				FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_BlastDry);
-				data.rotation = 90 * Rand.RangeInclusive(0, 3);
-				data.instanceColor = Color.Lerp(colorCenter, colorEdge, (center - cell).LengthHorizontal / radius);
-				map.flecks.CreateFleck(data);
-			}
 			// Many explosions can land in one frame; stacking their sounds only clips.
 			if (now - lastExplosionSoundTime >= MinSecondsBetweenExplosionSounds)
 			{
 				lastExplosionSoundTime = now;
 				DamageDefOf.Bomb.soundExplosion?.PlayOneShot(new TargetInfo(center, map));
 			}
+		}
+
+		public static void BlastCell(Map map, IntVec3 center, IntVec3 cell, float radius)
+		{
+			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_BlastDry);
+			data.rotation = 90 * Rand.RangeInclusive(0, 3);
+			data.instanceColor = Color.Lerp(T.BlastColorCenter, T.BlastColorEdge, (center - cell).LengthHorizontal / radius);
+			map.flecks.CreateFleck(data);
 		}
 	}
 }

@@ -13,18 +13,22 @@ namespace ViolentTakeoff
 		private readonly List<ShockwaveInstance> active = new List<ShockwaveInstance>();
 		// Stays drawn after the wave is done, until the map is gone.
 		private ScorchOverlay scorch;
+		private readonly EffectsRunner effects;
 
 		public MapComponent_ViolentTakeoff(Map map) : base(map)
 		{
+			effects = new EffectsRunner(map);
 		}
 
 		// MapComponentUpdate runs every frame even while the game is paused, unlike MapComponentTick.
 		public override void MapComponentUpdate()
 		{
+			float deltaTime = Mathf.Min(Time.deltaTime, MaxFrameDelta);
 			scorch?.Draw();
+			effects.Update(deltaTime);
+			effects.Draw();
 			if (active.Count == 0) return;
 
-			float deltaTime = Mathf.Min(Time.deltaTime, MaxFrameDelta);
 			stopwatch.Restart();
 			for (int i = active.Count - 1; i >= 0; i--)
 			{
@@ -74,7 +78,7 @@ namespace ViolentTakeoff
 			map.fogGrid.ClearAllFog();
 			ShockwaveEffects.ApplyTuning();
 			if (Config.Mode == DestructionMode.Scorch && scorch == null) scorch = new ScorchOverlay(map);
-			active.Add(new ShockwaveInstance(center, map, area, scorch, duringTakeoff));
+			active.Add(new ShockwaveInstance(center, map, area, scorch, effects, duringTakeoff));
 		}
 
 		// Stops the waves; the scorch overlay (if any) stays drawn.
