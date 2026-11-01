@@ -20,6 +20,8 @@ namespace ViolentTakeoff
 		{
 			VT_FleckDefOf.VT_ExplosionFlash.solidTime = T.FlashSolid;
 			VT_FleckDefOf.VT_ExplosionFlash.fadeOutTime = T.FlashFade;
+			VT_FleckDefOf.VT_RimFlash.solidTime = T.RimLife * 0.3f;
+			VT_FleckDefOf.VT_RimFlash.fadeOutTime = T.RimLife * 0.7f;
 			VT_FleckDefOf.VT_DustPuff.fadeOutTime = T.DustFade;
 			VT_FleckDefOf.VT_BlastDry.fadeOutTime = T.BlastFade;
 			VT_FleckDefOf.VT_FireGlow.solidTime = T.FireSolid;
@@ -28,16 +30,35 @@ namespace ViolentTakeoff
 
 		// Like vanilla FleckMaker.ThrowExplosionCell on realTime flecks. Defaults sit between the original's look
 		// (scale 1, 70% dust: reads pale here) and a scale of 1.2-5.2 (reads as an orange band).
-		public static void CellFlash(Map map, IntVec3 cell)
+		// stretch: how much longer than normal the flash should live (the ring is running slow; see ShockwaveInstance).
+		public static void CellFlash(Map map, IntVec3 cell, float stretch)
 		{
 			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_ExplosionFlash, Rand.Range(T.FlashScaleMin, T.FlashScaleMax));
 			data.rotation = 90 * Rand.RangeInclusive(0, 3);
 			data.instanceColor = T.FlashColor;
+			data.solidTimeOverride = Stretched(VT_FleckDefOf.VT_ExplosionFlash, stretch);
 			map.flecks.CreateFleck(data);
 			if (Rand.Value < T.DustChance)
 			{
 				DustPuff(map, cell, T.DustScale);
 			}
+		}
+
+		// The bright leading edge: short-lived, so it stays a thin line just at the front.
+		public static void RimFlash(Map map, IntVec3 cell, float stretch)
+		{
+			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_RimFlash, Rand.Range(T.RimScaleMin, T.RimScaleMax));
+			data.rotation = Rand.Range(0f, 360f);
+			data.instanceColor = T.RimColor;
+			data.solidTimeOverride = Stretched(VT_FleckDefOf.VT_RimFlash, stretch);
+			map.flecks.CreateFleck(data);
+		}
+
+		// Fade time is per def, so a longer life is given as extra solid time.
+		private static float Stretched(FleckDef def, float stretch)
+		{
+			float life = def.fadeInTime + def.solidTime + def.fadeOutTime;
+			return Mathf.Max(def.solidTime, life * stretch - def.fadeInTime - def.fadeOutTime);
 		}
 
 		public static void DustPuff(Map map, IntVec3 cell, float scale)

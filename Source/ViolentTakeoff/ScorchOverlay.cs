@@ -6,11 +6,13 @@ using Verse;
 namespace ViolentTakeoff
 {
 	// "Scorch" mode: instead of destroying anything, the swept area is painted over with charred ground and ash,
-	// drawn above buildings, items and pawns. Costs a few meshes no matter how much stuff is on the map.
-	// Meshes are split into small chunks so adding cells only rebuilds the chunks the wave front touched.
+	// drawn above buildings, items and pawns. Its cost does not depend on how much stuff is on the map, so it is
+	// kept low in absolute terms: 16x16-cell chunks with two draw calls each (ground, ash), only chunks on screen
+	// are drawn, and chunks the wave front touched are rebuilt at most 10 times a second, not every frame.
 	public class ScorchOverlay
 	{
-		private const int ChunkSize = 8;
+		private const int ChunkSize = 16;
+		private const float RebuildInterval = 0.1f;
 		// Soil texture spans this many cells before repeating.
 		private const float GroundTiling = 10f;
 		private const float AshSize = 3f;
@@ -27,9 +29,12 @@ namespace ViolentTakeoff
 		private class Chunk
 		{
 			public readonly List<IntVec3> ground = new List<IntVec3>();
-			public readonly List<(Vector3 pos, float angle, int variant)> ash = new List<(Vector3, float, int)>();
+			public readonly List<(Vector3 pos, float angle)> ash = new List<(Vector3, float)>();
 			public Mesh groundMesh;
-			public readonly Mesh[] ashMeshes = new Mesh[AshVariants];
+			public Mesh ashMesh;
+			// One ash texture per chunk keeps it to a single draw call; neighbouring chunks still differ.
+			public int ashVariant;
+			public CellRect rect;
 			public bool dirty;
 		}
 
@@ -37,6 +42,7 @@ namespace ViolentTakeoff
 		private readonly float altitude = AltitudeLayer.Blueprint.AltitudeFor();
 		private readonly Dictionary<int, Chunk> chunks = new Dictionary<int, Chunk>();
 		private readonly List<Chunk> dirtyChunks = new List<Chunk>();
+		private float lastRebuild = float.MinValue;
 
 		private static readonly List<Vector3> verts = new List<Vector3>();
 		private static readonly List<Vector2> uvs = new List<Vector2>();
@@ -69,13 +75,14 @@ namespace ViolentTakeoff
 			int key = (cell.x / ChunkSize) * 10000 + cell.z / ChunkSize;
 			if (!chunks.TryGetValue(key, out Chunk chunk))
 			{
-				chunk = new Chunk();
+				int cx = cell.x / ChunkSize * ChunkSize, cz = cell.z / ChunkSize * ChunkSize;
+				chunk = new Chunk { ashVariant = Rand.Range(0, AshVariants), rect = new CellRect(cx, cz, ChunkSize, ChunkSize) };
 				chunks.Add(key, chunk);
 			}
 			chunk.ground.Add(cell);
 			if (Rand.Chance(ashChance))
 			{
-				chunk.ash.Add((cell.ToVector3Shifted() + new Vector3(Rand.Range(-0.5f, 0.5f), 0f, Rand.Range(-0.5f, 0.5f)), Rand.Range(0f, 360f), Rand.Range(0, AshVariants)));
+				chunk.ash.Add((cell.ToVector3Shifted() + new Vector3(Rand.Range(-0.5f, 0.5f), 0f, Rand.Range(-0.5f, 0.5f)), Rand.Range(0f, 360f)));
 			}
 			if (!chunk.dirty)
 			{
@@ -87,21 +94,25 @@ namespace ViolentTakeoff
 		// Called every frame (MapComponentUpdate): Graphics.DrawMesh only draws for the current frame.
 		public void Draw()
 		{
-			foreach (Chunk chunk in dirtyChunks)
+			float now = Time.realtimeSinceStartup;
+			if (dirtyChunks.Count > 0 && now - lastRebuild >= RebuildInterval)
 			{
-				Rebuild(chunk);
-				chunk.dirty = false;
+				lastRebuild = now;
+				foreach (Chunk chunk in dirtyChunks)
+				{
+					Rebuild(chunk);
+					chunk.dirty = false;
+				}
+				dirtyChunks.Clear();
 			}
-			dirtyChunks.Clear();
 
 			if (Find.CurrentMap != map) return;
+			CellRect view = Find.CameraDriver.CurrentViewRect.ExpandedBy(2);
 			foreach (Chunk chunk in chunks.Values)
 			{
+				if (chunk.groundMesh == null || !chunk.rect.Overlaps(view)) continue;
 				Graphics.DrawMesh(chunk.groundMesh, Vector3.zero, Quaternion.identity, groundMat, 0);
-				for (int i = 0; i < AshVariants; i++)
-				{
-					if (chunk.ashMeshes[i] != null) Graphics.DrawMesh(chunk.ashMeshes[i], Vector3.zero, Quaternion.identity, ashMats[i], 0);
-				}
+				if (chunk.ashMesh != null) Graphics.DrawMesh(chunk.ashMesh, Vector3.zero, Quaternion.identity, ashMats[chunk.ashVariant], 0);
 			}
 		}
 
@@ -116,21 +127,17 @@ namespace ViolentTakeoff
 			}
 			chunk.groundMesh = Fill(chunk.groundMesh);
 
-			for (int variant = 0; variant < AshVariants; variant++)
+			verts.Clear(); uvs.Clear(); tris.Clear();
+			float h = AshSize / 2f;
+			foreach (var ash in chunk.ash)
 			{
-				verts.Clear(); uvs.Clear(); tris.Clear();
-				foreach (var ash in chunk.ash)
-				{
-					if (ash.variant != variant) continue;
-					// Slightly above the ground layer so ash is never hidden by it.
-					Vector3 center = new Vector3(ash.pos.x, altitude + 0.001f, ash.pos.z);
-					Quaternion rot = Quaternion.AngleAxis(ash.angle, Vector3.up);
-					float h = AshSize / 2f;
-					AddQuad(center + rot * new Vector3(-h, 0f, -h), center + rot * new Vector3(-h, 0f, h), center + rot * new Vector3(h, 0f, h), center + rot * new Vector3(h, 0f, -h),
-						new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f));
-				}
-				chunk.ashMeshes[variant] = verts.Count > 0 ? Fill(chunk.ashMeshes[variant]) : null;
+				// Slightly above the ground layer so ash is never hidden by it.
+				Vector3 center = new Vector3(ash.pos.x, altitude + 0.001f, ash.pos.z);
+				Quaternion rot = Quaternion.AngleAxis(ash.angle, Vector3.up);
+				AddQuad(center + rot * new Vector3(-h, 0f, -h), center + rot * new Vector3(-h, 0f, h), center + rot * new Vector3(h, 0f, h), center + rot * new Vector3(h, 0f, -h),
+					new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f));
 			}
+			chunk.ashMesh = verts.Count > 0 ? Fill(chunk.ashMesh) : null;
 		}
 
 		private static void AddQuad(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector2 ua, Vector2 ub, Vector2 uc, Vector2 ud)

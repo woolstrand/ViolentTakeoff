@@ -41,6 +41,9 @@ namespace ViolentTakeoff
 		private float radius = StartRadius;
 		private float sinceDestruction = DestructionInterval;
 		private float ringSpeed = -1f;
+		// Measured ring speed (smoothed): flashes live longer when it falls below nominal, so the band keeps its width.
+		private float measuredSpeed = -1f;
+		private const float MeasuredSpeedSmoothing = 0.1f;
 
 		private readonly System.Diagnostics.Stopwatch frameWatch = new System.Diagnostics.Stopwatch();
 		private readonly List<Thing> tmpThings = new List<Thing>();
@@ -105,6 +108,7 @@ namespace ViolentTakeoff
 		{
 			float speed = Config.ShockwaveSpeedCellsPerSecond;
 			float target = radius + speed * deltaTime;
+			float previousRadius = radius;
 
 			if (mode == DestructionMode.Destroy)
 			{
@@ -126,13 +130,20 @@ namespace ViolentTakeoff
 				radius = target;
 			}
 
+			if (deltaTime > 0f)
+			{
+				float speedNow = (radius - previousRadius) / deltaTime;
+				measuredSpeed = measuredSpeed < 0f ? speed : Mathf.Lerp(measuredSpeed, speedNow, MeasuredSpeedSmoothing);
+			}
+			float stretch = Mathf.Clamp(speed / Mathf.Max(measuredSpeed, 0.01f), 1f, Config.Tuning.MaxStretch);
+
 			while (nextVisualCell < cellIndices.Length && cellDistances[nextVisualCell] <= radius)
 			{
 				Profile.Visuals.Start();
 				IntVec3 cell = Map.cellIndices.IndexToCell(cellIndices[nextVisualCell]);
 				// Scorch covers every cell: gaps would show as bright squares of untouched ground.
 				scorch?.Add(cell);
-				if (Rand.Chance(Config.BaseCellChance)) AffectCellCheaply(cell);
+				if (Rand.Chance(Config.BaseCellChance)) AffectCellCheaply(cell, stretch);
 				Profile.Visuals.Stop();
 				nextVisualCell++;
 			}
@@ -179,9 +190,9 @@ namespace ViolentTakeoff
 		}
 
 		// Effects, scorch and (in scorch mode) pawns: everything that runs with the visible ring itself.
-		private void AffectCellCheaply(IntVec3 cell)
+		private void AffectCellCheaply(IntVec3 cell, float stretch)
 		{
-			AddVisuals(cell);
+			AddVisuals(cell, stretch);
 			if (mode == DestructionMode.Scorch && Config.KillPawns) KillPawns(cell);
 		}
 
@@ -299,11 +310,15 @@ namespace ViolentTakeoff
 			tmpThings.Clear();
 		}
 
-		private void AddVisuals(IntVec3 cell)
+		private void AddVisuals(IntVec3 cell, float stretch)
 		{
+			if (Rand.Chance(Config.Tuning.RimChance))
+			{
+				ShockwaveEffects.RimFlash(Map, cell, stretch);
+			}
 			if (Rand.Chance(Config.VisualsFleckChance))
 			{
-				ShockwaveEffects.CellFlash(Map, cell);
+				ShockwaveEffects.CellFlash(Map, cell, stretch);
 			}
 			if (Rand.Chance(Config.FireStartChancePerCell))
 			{

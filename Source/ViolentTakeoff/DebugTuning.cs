@@ -23,6 +23,11 @@ namespace ViolentTakeoff
 		public float FlashScaleMin = 1.3f, FlashScaleMax = 2f;
 		public float FlashSolid = 0.1f, FlashFade = 0.6f;
 		public float FlashR = 1f, FlashG = 0.84f, FlashB = 0.35f, FlashBrightness = 1.34f;
+		// Rim: one short, bright flash per cell as the front reaches it (color: ring color whitened by RimWhiten).
+		public float RimChance = 1f, RimScaleMin = 1f, RimScaleMax = 1.6f, RimLife = 0.15f, RimBrightness = 2.5f, RimWhiten = 0.5f;
+		// When the ring runs slower than its nominal speed, flashes live up to this many times longer so the band
+		// keeps the same width on screen.
+		public float MaxStretch = 4f;
 		// Dust puffs thrown with a flash.
 		public float DustChance = 0.5f, DustScale = 1.2f, DustFade = 1f, DustBrightness = 1f;
 		// Explosions: center flash, colored blast per cell, smoke.
@@ -56,6 +61,13 @@ namespace ViolentTakeoff
 			Add("Ring flashes", nameof(FlashG), "green", 0f, 1f, t => t.FlashG, (t, v) => t.FlashG = v);
 			Add("Ring flashes", nameof(FlashB), "blue", 0f, 1f, t => t.FlashB, (t, v) => t.FlashB = v);
 			Add("Ring flashes", nameof(FlashBrightness), "brightness", 0f, 3f, t => t.FlashBrightness, (t, v) => t.FlashBrightness = v);
+			Add("Ring rim", nameof(RimChance), "chance per cell", 0f, 1f, t => t.RimChance, (t, v) => t.RimChance = v);
+			Add("Ring rim", nameof(RimScaleMin), "scale min", 0.2f, 6f, t => t.RimScaleMin, (t, v) => t.RimScaleMin = v);
+			Add("Ring rim", nameof(RimScaleMax), "scale max", 0.2f, 6f, t => t.RimScaleMax, (t, v) => t.RimScaleMax = v);
+			Add("Ring rim", nameof(RimLife), "life (s)", 0.02f, 1f, t => t.RimLife, (t, v) => t.RimLife = v);
+			Add("Ring rim", nameof(RimBrightness), "brightness", 0f, 5f, t => t.RimBrightness, (t, v) => t.RimBrightness = v);
+			Add("Ring rim", nameof(RimWhiten), "whiten (0 = ring color, 1 = white)", 0f, 1f, t => t.RimWhiten, (t, v) => t.RimWhiten = v);
+			Add("Ring rim", nameof(MaxStretch), "max life stretch when the ring slows", 1f, 8f, t => t.MaxStretch, (t, v) => t.MaxStretch = v);
 			Add("Dust", nameof(DustChance), "chance per flash", 0f, 1f, t => t.DustChance, (t, v) => t.DustChance = v);
 			Add("Dust", nameof(DustScale), "scale", 0.2f, 4f, t => t.DustScale, (t, v) => t.DustScale = v);
 			Add("Dust", nameof(DustFade), "fade time (s)", 0.1f, 4f, t => t.DustFade, (t, v) => t.DustFade = v);
@@ -95,6 +107,7 @@ namespace ViolentTakeoff
 		}
 
 		public Color FlashColor => new Color(FlashR, FlashG, FlashB) * FlashBrightness;
+		public Color RimColor => Color.Lerp(new Color(FlashR, FlashG, FlashB), Color.white, RimWhiten) * RimBrightness;
 		public Color BlastColorCenter => new Color(BlastR, BlastG, BlastB) * BlastBrightness;
 		// Same falloff toward grey as vanilla's bomb (edge color (0.6, 0.5, 0.4) vs center (1, 0.5, 0.3)).
 		public Color BlastColorEdge => new Color(0.6f, 0.5f, 0.4f) * BlastBrightness;

@@ -7,6 +7,7 @@ namespace ViolentTakeoff
 	public static class VT_FleckDefOf
 	{
 		public static FleckDef VT_ExplosionFlash;
+		public static FleckDef VT_RimFlash;
 		public static FleckDef VT_BlastDry;
 		public static FleckDef VT_DustPuff;
 		public static FleckDef VT_Smoke;

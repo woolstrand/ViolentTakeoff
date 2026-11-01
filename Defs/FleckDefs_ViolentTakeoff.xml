@@ -19,6 +19,20 @@
     </graphicData>
   </FleckDef>
 
+  <!-- The wave's leading edge: short-lived, bright, so the rim stands out from the band of flashes behind it.
+       Timing comes from the tuning panel (DebugTuning.Rim*). -->
+  <FleckDef ParentName="FleckBase">
+    <defName>VT_RimFlash</defName>
+    <realTime>true</realTime>
+    <altitudeLayer>MoteOverhead</altitudeLayer>
+    <solidTime>0.05</solidTime>
+    <fadeOutTime>0.1</fadeOutTime>
+    <graphicData>
+      <texPath>Things/Mote/ExplosionFlash</texPath>
+      <shaderType>MoteGlow</shaderType>
+    </graphicData>
+  </FleckDef>
+
   <FleckDef ParentName="FleckBase">
     <defName>VT_BlastDry</defName>
     <realTime>true</realTime>
