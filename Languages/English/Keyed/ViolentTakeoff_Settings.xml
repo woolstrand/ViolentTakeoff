@@ -9,25 +9,21 @@
 	<VT_ShockwaveSpeed_Tooltip>How many cells the shockwave expands in one second.</VT_ShockwaveSpeed_Tooltip>
 
 	<VT_FireStartChance_Label>Fire start chance per cell: {0}</VT_FireStartChance_Label>
-	<VT_FireStartChance_Tooltip>Chance to start a fire in an affected cell.</VT_FireStartChance_Tooltip>
+	<VT_FireStartChance_Tooltip>Chance to show flames and smoke in an affected cell. These are visual only: real fires can not burn while the game is paused during takeoff.</VT_FireStartChance_Tooltip>
 
 	<VT_ExplosionChance_Label>Explosion chance per cell: {0}</VT_ExplosionChance_Label>
-	<VT_ExplosionChance_Tooltip>Chance to spawn a small explosion in an affected cell.</VT_ExplosionChance_Tooltip>
+	<VT_ExplosionChance_Tooltip>Chance to show a small explosion in an affected cell.</VT_ExplosionChance_Tooltip>
 
 	<VT_FireSize_Label>Fire size: {0}</VT_FireSize_Label>
-	<VT_FireSize_Tooltip>Size of fires created by the shockwave.</VT_FireSize_Tooltip>
+	<VT_FireSize_Tooltip>Size of flames shown by the shockwave.</VT_FireSize_Tooltip>
 
 	<VT_VisualsFleckChance_Label>Visual effects chance: {0}</VT_VisualsFleckChance_Label>
 	<VT_VisualsFleckChance_Tooltip>Chance to display a flash on each processed cell.</VT_VisualsFleckChance_Tooltip>
 
-	<VT_TickFrequency_Label>Update frequency divider: {0}</VT_TickFrequency_Label>
-	<VT_TickFrequency_Tooltip>Higher values update less often. For example, value of 10 means a single update happens once every 10 frames, while 1 means updates are calculated for each frame.</VT_TickFrequency_Tooltip>
 
-	<VT_BaseCellChance_Label>Cell processing chance: {0}</VT_BaseCellChance_Label>
-	<VT_BaseCellChance_Tooltip>Controls probability of running calculation for a particular cell. Because of how explosion ring rasterization works, too high values lead to some cells affected twice (which slows down animation without any additional value), too low values could lead to gaps in shockwave processing, leaving some cells intact. Overall, higher values look fuller but cost more performance.</VT_BaseCellChance_Tooltip>
+	<VT_BaseCellChance_Label>Cell coverage: {0}</VT_BaseCellChance_Label>
+	<VT_BaseCellChance_Tooltip>Chance that a cell in the shockwave's path is affected (destruction and effects). The wave reaches every cell exactly once; 1 leaves nothing intact, lower values leave random cells untouched.</VT_BaseCellChance_Tooltip>
 
-	<VT_VisualsOnly_Label>No real destruction, visuals only</VT_VisualsOnly_Label>
-	<VT_VisualsOnly_Tooltip>Skip all destruction and show only visual effects. Recommended for slow computers.</VT_VisualsOnly_Tooltip>
 
 	<VT_RemoveGrass_Label>Remove grass</VT_RemoveGrass_Label>
 	<VT_RemoveGrass_Tooltip>Removes plants and grass in affected cells. Can significantly slow down in lush biomes.</VT_RemoveGrass_Tooltip>
@@ -46,6 +42,25 @@
 
 	<VT_AffectTerrain_Label>Affect terrain</VT_AffectTerrain_Label>
 	<VT_AffectTerrain_Tooltip>Removes floors or bridges, destroys orbital platforms.</VT_AffectTerrain_Tooltip>
+
+	<VT_Mode_Label>What the shockwave does to the map:</VT_Mode_Label>
+	<VT_Mode_Destroy>Destroy</VT_Mode_Destroy>
+	<VT_Mode_Destroy_Tooltip>Really destroys things and floors in the shockwave's path, per the toggles below. Most expensive on dense bases.</VT_Mode_Destroy_Tooltip>
+
+	<VT_Mode_Scorch>Scorch (cheap)</VT_Mode_Scorch>
+	<VT_Mode_Scorch_Tooltip>Nothing is destroyed: the swept ground is painted over with scorched earth and ash, hiding everything under it. Costs almost nothing however crowded the map is. Pawns can still be killed.</VT_Mode_Scorch_Tooltip>
+
+	<VT_Mode_EffectsOnly>Effects only</VT_Mode_EffectsOnly>
+	<VT_Mode_EffectsOnly_Tooltip>Flashes, dust, flames and explosions only; the map is left as is.</VT_Mode_EffectsOnly_Tooltip>
+
+	<VT_FrameBudget_Label>Destruction time per step (ms): {0}</VT_FrameBudget_Label>
+	<VT_FrameBudget_Tooltip>Destruction runs in 15 steps per second; this is how long each step may take. The visible ring never runs ahead of destruction: where there is more to destroy than fits, the whole wave slows down smoothly instead of stuttering. Lower keeps frames smooth, higher keeps the wave fast.</VT_FrameBudget_Tooltip>
+
+	<VT_FastBookkeeping_Label>Fast bookkeeping</VT_FastBookkeeping_Label>
+	<VT_FastBookkeeping_Tooltip>Speeds up mass destruction by temporarily setting aside the game's big lists of things on the map, which every destroyed object otherwise searches. Turn off if you see errors during takeoff.</VT_FastBookkeeping_Tooltip>
+
+	<VT_SkipFilthFloors_Label>Keep dirty floors</VT_SkipFilthFloors_Label>
+	<VT_SkipFilthFloors_Tooltip>Do not remove floors that have filth on them. Removing such a floor also destroys the filth, which costs as much as destroying an object.</VT_SkipFilthFloors_Tooltip>
 
 	<VT_Settings_Category>Violent Takeoff</VT_Settings_Category>
 </LanguageData> 

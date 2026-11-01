@@ -1,21 +1,20 @@
 ﻿<Properties BuildWithMSBuildOnMono="True">
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <Debugger.DebugSourceFolders />
-  <MonoDevelop.Ide.Workbench ActiveDocument="ShockwaveInstance.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Manifest.xml">
     <Files>
-      <File FileName="Config.cs" Line="6" Column="54" />
-      <File FileName="Designator_ViolentTakeoff.cs" Line="7" Column="2" />
-      <File FileName="GameComponent_ViolentTakeoff.cs" Line="23" Column="21" />
-      <File FileName="ShockwaveInstance.cs" Line="112" Column="48" />
+      <File FileName="Settings_ViolentTakeoff.cs" Line="50" Column="20" />
+      <File FileName="DebugActions_ViolentTakeoff.cs" Line="24" Column="15" />
+      <File FileName="PawnStunUtility.cs" Line="20" Column="1" />
+      <File FileName="ShockwaveInstance.cs" Line="125" Column="71" />
+      <File FileName="HarmonyPatches.cs" Line="1" Column="1" />
+      <File FileName="../../../../../../Applications/Visual Studio.app/Contents/MonoBundle/MSBuild/Current/bin/Microsoft.Common.CurrentVersion.targets" Line="670" Column="102" />
+      <File FileName="Manifest.xml" Line="3" Column="40" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="ViolentTakeoff" expanded="True">
-            <Node name="ViolentTakeoff" expanded="True">
-              <Node name="ShockwaveInstance.cs" selected="True" />
-            </Node>
+            <Node name="ViolentTakeoff" expanded="True" />
           </Node>
         </State>
       </Pad>
@@ -24,8 +23,10 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
 </Properties>

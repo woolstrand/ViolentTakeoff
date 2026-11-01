@@ -47,4 +47,9 @@
 		<Reference Include="Waylith" HintPath="$(RefDir17)Waylith.dll" Private="false" />
 		<Reference Include="0Harmony" HintPath="$(RefDir17)0Harmony.dll" Private="false" />
 	</ItemGroup>
+
+	<!-- Deploy into the game's Mods folder once both targets are built (outer build only). -p:Deploy=false to skip. -->
+	<Target Name="DeployMod" AfterTargets="Build" Condition="'$(TargetFramework)' == '' And '$(Deploy)' != 'false' And '$(OS)' != 'Windows_NT'">
+		<Exec Command="bash &quot;$(MSBuildThisFileDirectory)../../deploy.sh&quot;" />
+	</Target>
 </Project>
