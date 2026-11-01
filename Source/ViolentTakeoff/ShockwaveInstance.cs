@@ -139,12 +139,12 @@ namespace ViolentTakeoff
 
 			while (nextVisualCell < cellIndices.Length && cellDistances[nextVisualCell] <= radius)
 			{
-				Profile.Visuals.Start();
+				Profile.Start(Profile.Visuals);
 				IntVec3 cell = Map.cellIndices.IndexToCell(cellIndices[nextVisualCell]);
 				// Scorch covers every cell: gaps would show as bright squares of untouched ground.
 				scorch?.Add(cell);
 				if (Rand.Chance(Config.BaseCellChance)) AffectCellCheaply(cell, stretch);
-				Profile.Visuals.Stop();
+				Profile.Stop(Profile.Visuals);
 				nextVisualCell++;
 			}
 
@@ -160,9 +160,9 @@ namespace ViolentTakeoff
 
 		private void ReleaseStash()
 		{
-			Profile.Stash.Start();
+			Profile.Start(Profile.Stash);
 			listerStash?.End();
-			Profile.Stash.Stop();
+			Profile.Stop(Profile.Stash);
 		}
 
 		// Radius of the first cell not destroyed yet.
@@ -207,22 +207,21 @@ namespace ViolentTakeoff
 
 		private void Devastate(IntVec3 cell, float distance)
 		{
-			// TEMP profiling (dev mode): split our per-cell cost by category.
-			Profile.Things.Start();
+			Profile.Start(Profile.Things);
 			AffectThings(cell, distance);
-			Profile.Things.Stop();
+			Profile.Stop(Profile.Things);
 			if (Config.AffectTerrain)
 			{
-				Profile.Terrain.Start();
+				Profile.Start(Profile.Terrain);
 				AffectTerrain(cell);
-				Profile.Terrain.Stop();
+				Profile.Stop(Profile.Terrain);
 			}
 		}
 
 		// Called right before anything is despawned, so batches that destroy nothing skip the lister shuffle.
 		private void BeforeDespawn()
 		{
-			if (listerStash != null && !listerStash.Active) { Profile.Stash.Start(); listerStash.Begin(); Profile.Stash.Stop(); }
+			if (listerStash != null && !listerStash.Active) { Profile.Start(Profile.Stash); listerStash.Begin(); Profile.Stop(Profile.Stash); }
 		}
 
 		private void AffectTerrain(IntVec3 cell)
@@ -238,7 +237,7 @@ namespace ViolentTakeoff
 				if (!Map.terrainGrid.CanRemoveTopLayerAt(cell)) return;
 				// Removing a floor destroys the filth on it, and every despawn is costly; a dirty floor can stay.
 				if (Config.SkipFilthFloors && HasFilth(cell)) return;
-				Profile.TerrainChanged++;
+				if (Profile.Enabled) Profile.TerrainChanged++;
 				BeforeDespawn();
 				Map.terrainGrid.RemoveTopLayer(cell, doLeavings: false);
 			}
@@ -280,7 +279,7 @@ namespace ViolentTakeoff
 				// Keep roof holders to avoid expensive collapse recalcs
 				if (thing.def.holdsRoof && (!Config.DestroyRoofholders || !wallsGo)) continue;
 
-				Profile.Count(thing);
+				if (Profile.Enabled) Profile.Count(thing);
 				if (thing is Plant)
 				{
 					if (Config.RemoveGrass) { BeforeDespawn(); thing.Destroy(DestroyMode.Vanish); }
@@ -328,34 +327,6 @@ namespace ViolentTakeoff
 			{
 				effects?.StartExplosion(cell);
 			}
-		}
-	}
-
-	// TEMP profiling helper, remove once performance is settled.
-	public static class Profile
-	{
-		public static readonly System.Diagnostics.Stopwatch Things = new System.Diagnostics.Stopwatch();
-		public static readonly System.Diagnostics.Stopwatch Terrain = new System.Diagnostics.Stopwatch();
-		public static readonly System.Diagnostics.Stopwatch Visuals = new System.Diagnostics.Stopwatch();
-		public static readonly System.Diagnostics.Stopwatch Stash = new System.Diagnostics.Stopwatch();
-		public static int Plants, Buildings, RoofHolders, Items, Pawns, Other, TerrainChanged;
-
-		public static void Count(Thing thing)
-		{
-			if (thing is Plant) Plants++;
-			else if (thing is Pawn) Pawns++;
-			else if (thing.def.category == ThingCategory.Building) { if (thing.def.holdsRoof) RoofHolders++; else Buildings++; }
-			else if (thing.def.category == ThingCategory.Item) Items++;
-			else Other++;
-		}
-
-		public static string Report()
-		{
-			string r = $"things={Things.Elapsed.TotalMilliseconds:0}ms terrain={Terrain.Elapsed.TotalMilliseconds:0}ms visuals={Visuals.Elapsed.TotalMilliseconds:0}ms stash={Stash.Elapsed.TotalMilliseconds:0}ms " +
-				$"| plants={Plants} buildings={Buildings} roofholders={RoofHolders} items={Items} pawns={Pawns} other={Other} terrainChanged={TerrainChanged}";
-			Things.Reset(); Terrain.Reset(); Visuals.Reset(); Stash.Reset();
-			Plants = Buildings = RoofHolders = Items = Pawns = Other = TerrainChanged = 0;
-			return r;
 		}
 	}
 }

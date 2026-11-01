@@ -29,7 +29,7 @@ namespace ViolentTakeoff
 			effects.Draw();
 			if (active.Count == 0) return;
 
-			stopwatch.Restart();
+			if (Profile.Enabled) stopwatch.Restart();
 			for (int i = active.Count - 1; i >= 0; i--)
 			{
 				if (active[i].Update(deltaTime))
@@ -39,11 +39,14 @@ namespace ViolentTakeoff
 					active.RemoveAt(i);
 				}
 			}
-			stopwatch.Stop();
-			TrackStats(active.Count > 0 ? active[0] : null);
+			if (Profile.Enabled)
+			{
+				stopwatch.Stop();
+				TrackStats(active.Count > 0 ? active[0] : null);
+			}
 		}
 
-		// Dev mode only: once per second, how long our update took vs. the whole frame, to tell our cost from the engine's.
+		// Profiling log (see Profile): once per second, how long our update took vs. the whole frame.
 		private readonly Stopwatch stopwatch = new Stopwatch();
 		private int statFrames;
 		private double statOwnMs, statOwnMaxMs;
@@ -51,7 +54,6 @@ namespace ViolentTakeoff
 
 		private void TrackStats(ShockwaveInstance wave)
 		{
-			if (!Prefs.DevMode) return;
 			double ownMs = stopwatch.Elapsed.TotalMilliseconds;
 			statFrames++;
 			statOwnMs += ownMs;
@@ -63,7 +65,7 @@ namespace ViolentTakeoff
 
 		private void LogStats(ShockwaveInstance wave, bool final)
 		{
-			if (!Prefs.DevMode || statFrames == 0) return;
+			if (!Profile.Enabled || statFrames == 0) return;
 			statElapsed += statFrameSecs;
 			Log.Message($"[ViolentTakeoff] t={statElapsed:0.0}s{(final ? " done" : "")} radius={wave.Radius:0} cells={wave.CellsDone}/{wave.CellsTotal} " +
 				$"fps={statFrames / statFrameSecs:0} frame avg/max={statFrameSecs * 1000f / statFrames:0.0}/{statFrameMaxSecs * 1000f:0.0}ms " +
@@ -77,6 +79,7 @@ namespace ViolentTakeoff
 		{
 			map.fogGrid.ClearAllFog();
 			ShockwaveEffects.ApplyTuning();
+			Profile.Refresh();
 			if (Config.Mode == DestructionMode.Scorch && scorch == null) scorch = new ScorchOverlay(map);
 			active.Add(new ShockwaveInstance(center, map, area, scorch, effects, duringTakeoff));
 		}

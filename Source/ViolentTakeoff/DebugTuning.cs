@@ -146,8 +146,8 @@ namespace ViolentTakeoff
 
 		public void DoSettings(Listing_Standard listing)
 		{
-			listing.GapLine();
-			listing.Label("Debug tuning (dev mode only). Applies to the next takeoff.");
+			listing.Gap(6f);
+			listing.Label("Look tuning. Applies to the next wave.");
 			Rect row = listing.GetRect(28f);
 			if (Widgets.ButtonText(row.LeftHalf().ContractedBy(2f), "Reset tuning")) Reset();
 			if (Widgets.ButtonText(row.RightHalf().ContractedBy(2f), "Log values")) Log.Message(Describe());

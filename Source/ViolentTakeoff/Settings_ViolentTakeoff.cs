@@ -32,6 +32,7 @@ namespace ViolentTakeoff
 		public bool DestroyRoofholders = true;
 		public bool AffectTerrain = true;
 		public DebugTuning Tuning = new DebugTuning();
+		public bool ProfilingLog = false;
 
 		private Vector2 scrollPosition;
 		private float contentHeight = 3000f;
@@ -55,6 +56,7 @@ namespace ViolentTakeoff
 			Scribe_Values.Look(ref DestroyRoofholders, "DestroyRoofholders", true);
 			Scribe_Values.Look(ref AffectTerrain, "AffectTerrain", true);
 
+			Scribe_Values.Look(ref ProfilingLog, "ProfilingLog", false);
 			Scribe_Deep.Look(ref Tuning, "Tuning");
 			if (Tuning == null) Tuning = new DebugTuning();
 
@@ -74,7 +76,6 @@ namespace ViolentTakeoff
 			ApplyPresetDefault();
 			Mode = DestructionMode.Scorch;
 			FrameBudgetMs = 3f;
-			BaseCellChance = 0.85f;
 			VisualsFleckChance = 0.6f;
 			FireStartChancePerCell = 0.005f;
 			ExplosionChancePerCell = 0.004f;
@@ -106,10 +107,26 @@ namespace ViolentTakeoff
 			ApplyPresetDefault();
 			SkipFilthFloors = false;
 			FrameBudgetMs = 10f;
-			BaseCellChance = 1f;
 			VisualsFleckChance = 0.9f;
 			FireStartChancePerCell = 0.02f;
 			ExplosionChancePerCell = 0.015f;
+		}
+
+		// Dev mode only: diagnostics, technical switches and fine tuning. Not translated on purpose.
+		private void DoDevSettings(Listing_Standard listing)
+		{
+			listing.GapLine();
+			listing.Label("Dev mode settings");
+			listing.CheckboxLabeled("Profiling log", ref ProfilingLog,
+				"Once per second while a wave runs, log frame times and the mod's own cost by category (Player.log, dev mode only).");
+			listing.CheckboxLabeled("Fast bookkeeping", ref FastBookkeeping,
+				"Destroy mode: set the map's big thing lists aside during destruction so each despawn skips a linear search. Turn off if errors appear during takeoff.");
+			listing.CheckboxLabeled("Destroy items", ref DestroyItems, "Destroy mode: destroy items lying in the wave's path.");
+			listing.Label($"Cell coverage: {BaseCellChance:0.##}", tooltip: "Chance that a cell in the wave's path is affected at all (destruction and effects). Below 1 leaves random cells untouched.");
+			BaseCellChance = Widgets.HorizontalSlider(listing.GetRect(22f), BaseCellChance, 0f, 1f);
+			listing.Label($"Fire size: {FireSize:0.##}", tooltip: "Size of flames and their glow; vanilla caps a single flame at fire size 2.4 (1.2 cells).");
+			FireSize = Widgets.HorizontalSlider(listing.GetRect(22f), FireSize, 0.1f, 5f);
+			Tuning.DoSettings(listing);
 		}
 
 		public void DoWindowContents(Rect inRect)
@@ -121,55 +138,20 @@ namespace ViolentTakeoff
 			var listing = new Listing_Standard { maxOneColumn = true };
 			listing.Begin(viewRect);
 
-			// Tip note
+			// Top: what significantly affects performance (plus the gameplay choice of killing pawns).
 			listing.Label("VT_Settings_TipNote".Translate());
-
-			// Preset buttons row
 			Rect row = listing.GetRect(28f);
 			float gap = 6f;
 			float third = (row.width - 2 * gap) / 3f;
 			Rect rSlow = new Rect(row.x, row.y, third, row.height);
 			Rect rDefault = new Rect(rSlow.xMax + gap, row.y, third, row.height);
 			Rect rFast = new Rect(rDefault.xMax + gap, row.y, third, row.height);
-			if (Widgets.ButtonText(rSlow, "VT_Preset_Slow".Translate()))
-			{
-				ApplyPresetSlow();
-			}
-			if (Widgets.ButtonText(rDefault, "VT_Preset_Default".Translate()))
-			{
-				ApplyPresetDefault();
-			}
-			if (Widgets.ButtonText(rFast, "VT_Preset_Powerful".Translate()))
-			{
-				ApplyPresetPowerful();
-			}
+			if (Widgets.ButtonText(rSlow, "VT_Preset_Slow".Translate())) ApplyPresetSlow();
+			if (Widgets.ButtonText(rDefault, "VT_Preset_Default".Translate())) ApplyPresetDefault();
+			if (Widgets.ButtonText(rFast, "VT_Preset_Powerful".Translate())) ApplyPresetPowerful();
 
 			listing.Gap(8f);
-
-			listing.Label("VT_ShockwaveSpeed_Label".Translate(ShockwaveSpeedCellsPerSecond.ToString("0.#")), tooltip: "VT_ShockwaveSpeed_Tooltip".Translate());
-			ShockwaveSpeedCellsPerSecond = Widgets.HorizontalSlider(listing.GetRect(22f), ShockwaveSpeedCellsPerSecond, 4f, 40f, roundTo: 0.5f);
-
-			listing.Gap(6f);
-			listing.Label("VT_FireStartChance_Label".Translate(FireStartChancePerCell.ToString("0.####")), tooltip: "VT_FireStartChance_Tooltip".Translate());
-			FireStartChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), FireStartChancePerCell, 0f, 0.2f);
-
-			listing.Gap(6f);
-			listing.Label("VT_ExplosionChance_Label".Translate(ExplosionChancePerCell.ToString("0.####")), tooltip: "VT_ExplosionChance_Tooltip".Translate());
-			ExplosionChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), ExplosionChancePerCell, 0f, 0.05f);
-
-			listing.Gap(6f);
-			listing.Label("VT_FireSize_Label".Translate(FireSize.ToString("0.##")), tooltip: "VT_FireSize_Tooltip".Translate());
-			FireSize = Widgets.HorizontalSlider(listing.GetRect(22f), FireSize, 0.1f, 5f);
-
-			listing.Gap(6f);
-			listing.Label("VT_VisualsFleckChance_Label".Translate(VisualsFleckChance.ToString("0.##")), tooltip: "VT_VisualsFleckChance_Tooltip".Translate());
-			VisualsFleckChance = Widgets.HorizontalSlider(listing.GetRect(22f), VisualsFleckChance, 0f, 1f);
-
-			listing.Gap(6f);
-			listing.Label("VT_BaseCellChance_Label".Translate(BaseCellChance.ToString("0.##")), tooltip: "VT_BaseCellChance_Tooltip".Translate());
-			BaseCellChance = Widgets.HorizontalSlider(listing.GetRect(22f), BaseCellChance, 0f, 1f);
-
-			listing.Gap(12f);
+			listing.Label("VT_Section_Performance".Translate());
 			listing.Label("VT_Mode_Label".Translate());
 			if (listing.RadioButton("VT_Mode_Destroy".Translate(), Mode == DestructionMode.Destroy, 12f, "VT_Mode_Destroy_Tooltip".Translate()))
 				Mode = DestructionMode.Destroy;
@@ -178,28 +160,50 @@ namespace ViolentTakeoff
 			if (listing.RadioButton("VT_Mode_EffectsOnly".Translate(), Mode == DestructionMode.EffectsOnly, 12f, "VT_Mode_EffectsOnly_Tooltip".Translate()))
 				Mode = DestructionMode.EffectsOnly;
 
+			listing.Gap(6f);
+			listing.Label("VT_ShockwaveSpeed_Label".Translate(ShockwaveSpeedCellsPerSecond.ToString("0.#")), tooltip: "VT_ShockwaveSpeed_Tooltip".Translate());
+			ShockwaveSpeedCellsPerSecond = Widgets.HorizontalSlider(listing.GetRect(22f), ShockwaveSpeedCellsPerSecond, 4f, 40f, roundTo: 0.5f);
+
 			if (Mode == DestructionMode.Destroy)
 			{
 				listing.Gap(6f);
 				listing.Label("VT_FrameBudget_Label".Translate(FrameBudgetMs.ToString("0.#")), tooltip: "VT_FrameBudget_Tooltip".Translate());
 				FrameBudgetMs = Widgets.HorizontalSlider(listing.GetRect(22f), FrameBudgetMs, 1f, 20f, roundTo: 0.5f);
-				listing.CheckboxLabeled("VT_FastBookkeeping_Label".Translate(), ref FastBookkeeping, "VT_FastBookkeeping_Tooltip".Translate());
-				listing.CheckboxLabeled("VT_SkipFilthFloors_Label".Translate(), ref SkipFilthFloors, "VT_SkipFilthFloors_Tooltip".Translate());
-				listing.Gap(6f);
 				listing.CheckboxLabeled("VT_RemoveGrass_Label".Translate(), ref RemoveGrass, "VT_RemoveGrass_Tooltip".Translate());
-				listing.CheckboxLabeled("VT_DestroyItems_Label".Translate(), ref DestroyItems, "VT_DestroyItems_Tooltip".Translate());
 				listing.CheckboxLabeled("VT_DestroyBuildings_Label".Translate(), ref DestroyBuildings, "VT_DestroyBuildings_Tooltip".Translate());
 				listing.CheckboxLabeled("VT_DestroyRoofholders_Label".Translate(), ref DestroyRoofholders, "VT_DestroyRoofholders_Tooltip".Translate());
 				listing.CheckboxLabeled("VT_AffectTerrain_Label".Translate(), ref AffectTerrain, "VT_AffectTerrain_Tooltip".Translate());
+				if (AffectTerrain)
+				{
+					listing.CheckboxLabeled("  " + "VT_SkipFilthFloors_Label".Translate(), ref SkipFilthFloors, "VT_SkipFilthFloors_Tooltip".Translate());
+				}
 			}
 			if (Mode != DestructionMode.EffectsOnly)
 			{
 				listing.CheckboxLabeled("VT_KillPawns_Label".Translate(), ref KillPawns, "VT_KillPawns_Tooltip".Translate());
 			}
 
+			// Bottom: the general look. Everything finer is in the dev-mode block.
+			listing.Gap(6f);
+			listing.GapLine();
+			listing.Label("VT_Section_Look".Translate());
+			listing.Label("VT_VisualsFleckChance_Label".Translate(VisualsFleckChance.ToString("0.##")), tooltip: "VT_VisualsFleckChance_Tooltip".Translate());
+			VisualsFleckChance = Widgets.HorizontalSlider(listing.GetRect(22f), VisualsFleckChance, 0f, 1f);
+			listing.Gap(6f);
+			listing.Label("VT_FireStartChance_Label".Translate(FireStartChancePerCell.ToString("0.###")), tooltip: "VT_FireStartChance_Tooltip".Translate());
+			FireStartChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), FireStartChancePerCell, 0f, 0.05f);
+			listing.Gap(6f);
+			listing.Label("VT_ExplosionChance_Label".Translate(ExplosionChancePerCell.ToString("0.###")), tooltip: "VT_ExplosionChance_Tooltip".Translate());
+			ExplosionChancePerCell = Widgets.HorizontalSlider(listing.GetRect(22f), ExplosionChancePerCell, 0f, 0.05f);
+
+			listing.Gap(6f);
 			if (Prefs.DevMode)
 			{
-				Tuning.DoSettings(listing);
+				DoDevSettings(listing);
+			}
+			else
+			{
+				listing.Label("VT_DevModeNote".Translate());
 			}
 
 			contentHeight = listing.CurHeight + 12f;
