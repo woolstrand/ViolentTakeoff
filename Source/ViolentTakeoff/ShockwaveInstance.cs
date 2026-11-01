@@ -165,7 +165,7 @@ namespace ViolentTakeoff
 				while (nextDestroyCell < cellIndices.Length && cellDistances[nextDestroyCell] <= limit)
 				{
 					if (frameWatch.Elapsed.TotalMilliseconds >= budgetMs) return false;
-					if (Rand.Chance(Config.BaseCellChance)) Devastate(Map.cellIndices.IndexToCell(cellIndices[nextDestroyCell]));
+					if (Rand.Chance(Config.BaseCellChance)) Devastate(Map.cellIndices.IndexToCell(cellIndices[nextDestroyCell]), cellDistances[nextDestroyCell]);
 					nextDestroyCell++;
 				}
 				return true;
@@ -192,11 +192,11 @@ namespace ViolentTakeoff
 			}
 		}
 
-		private void Devastate(IntVec3 cell)
+		private void Devastate(IntVec3 cell, float distance)
 		{
 			// TEMP profiling (dev mode): split our per-cell cost by category.
 			Profile.Things.Start();
-			AffectThings(cell);
+			AffectThings(cell, distance);
 			Profile.Things.Stop();
 			if (Config.AffectTerrain)
 			{
@@ -241,8 +241,10 @@ namespace ViolentTakeoff
 			return false;
 		}
 
-		private void AffectThings(IntVec3 cell)
+		private void AffectThings(IntVec3 cell, float distance)
 		{
+			// Walls thin out with distance: the core is flattened, the outskirts keep some of their walls.
+			bool wallsGo = Rand.Chance(Config.Tuning.WallChance(distance, Map));
 			// Copy: destroying things mutates the grid list.
 			List<Thing> things = Map.thingGrid.ThingsListAtFast(cell);
 			tmpThings.Clear();
@@ -263,7 +265,7 @@ namespace ViolentTakeoff
 				if (thing.def.building != null && thing.def.building.isNaturalRock) continue;
 
 				// Keep roof holders to avoid expensive collapse recalcs
-				if (thing.def.holdsRoof && !Config.DestroyRoofholders) continue;
+				if (thing.def.holdsRoof && (!Config.DestroyRoofholders || !wallsGo)) continue;
 
 				Profile.Count(thing);
 				if (thing is Plant)

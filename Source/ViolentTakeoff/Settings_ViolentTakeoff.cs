@@ -31,9 +31,10 @@ namespace ViolentTakeoff
 		public bool KillPawns = true;
 		public bool DestroyRoofholders = true;
 		public bool AffectTerrain = true;
+		public DebugTuning Tuning = new DebugTuning();
 
 		private Vector2 scrollPosition;
-		private float contentHeight = 1000f;
+		private float contentHeight = 3000f;
 
 		public override void ExposeData()
 		{
@@ -53,6 +54,9 @@ namespace ViolentTakeoff
 			Scribe_Values.Look(ref KillPawns, "KillPawns", true);
 			Scribe_Values.Look(ref DestroyRoofholders, "DestroyRoofholders", true);
 			Scribe_Values.Look(ref AffectTerrain, "AffectTerrain", true);
+
+			Scribe_Deep.Look(ref Tuning, "Tuning");
+			if (Tuning == null) Tuning = new DebugTuning();
 
 			// Older versions had a "visuals only" checkbox; it is the EffectsOnly mode now. Read, never written.
 			if (Scribe.mode == LoadSaveMode.LoadingVars)
@@ -127,7 +131,9 @@ namespace ViolentTakeoff
 		{
 			Rect viewRect = new Rect(0f, 0f, inRect.width - 16f, contentHeight);
 			Widgets.BeginScrollView(inRect, ref scrollPosition, viewRect);
-			var listing = new Listing_Standard();
+			// One column: the listing would otherwise wrap into a new column once the content outgrows the view, and
+			// CurHeight (used for the scroll height) would then measure only the last column.
+			var listing = new Listing_Standard { maxOneColumn = true };
 			listing.Begin(viewRect);
 
 			// Tip note
@@ -204,6 +210,11 @@ namespace ViolentTakeoff
 			if (Mode != DestructionMode.EffectsOnly)
 			{
 				listing.CheckboxLabeled("VT_KillPawns_Label".Translate(), ref KillPawns, "VT_KillPawns_Tooltip".Translate());
+			}
+
+			if (Prefs.DevMode)
+			{
+				Tuning.DoSettings(listing);
 			}
 
 			contentHeight = listing.CurHeight + 12f;

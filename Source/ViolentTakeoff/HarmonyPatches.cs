@@ -75,7 +75,6 @@ namespace ViolentTakeoff
 
 		// Vanilla starts the cutscene with DoShake(0.2f, 120). Its duration counts game ticks, which stand still while
 		// the cutscene keeps the game paused, so it shakes at full strength until takeoff ends. Swap it for a weaker one.
-		private const float CutsceneShakeMagnitude = 0.02f;
 		private static readonly AccessTools.FieldRef<CameraShaker, System.Collections.IList> ExtendedShakeRequests =
 			AccessTools.FieldRefAccess<CameraShaker, System.Collections.IList>("extendedShakeRequests");
 
@@ -87,7 +86,7 @@ namespace ViolentTakeoff
 			if (requests != null && requests.Count > 0)
 				requests.RemoveAt(requests.Count - 1); // the one BeginTakeoffCutscene just added
 			shaker.StopAllShaking();
-			shaker.DoShake(CutsceneShakeMagnitude, 120);
+			shaker.DoShake(Config.Tuning.ShakeMagnitude, 120);
 		}
 
 		// Prefix: the map is abandoned and torn down inside TakeoffEnded, and its thing lists must be whole by then.

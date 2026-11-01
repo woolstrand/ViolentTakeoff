@@ -72,6 +72,7 @@ namespace ViolentTakeoff
 		public void StartShockwave(IntVec3 center, CellRect? area = null, bool duringTakeoff = false)
 		{
 			map.fogGrid.ClearAllFog();
+			ShockwaveEffects.ApplyTuning();
 			if (Config.Mode == DestructionMode.Scorch && scorch == null) scorch = new ScorchOverlay(map);
 			active.Add(new ShockwaveInstance(center, map, area, scorch, duringTakeoff));
 		}

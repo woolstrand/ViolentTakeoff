@@ -8,29 +8,28 @@ namespace ViolentTakeoff
 	// "Scorch" mode: instead of destroying anything, the swept area is painted over with charred ground and ash,
 	// drawn above buildings, items and pawns. Costs a few meshes no matter how much stuff is on the map.
 	// Meshes are split into small chunks so adding cells only rebuilds the chunks the wave front touched.
-	[StaticConstructorOnStartup]
 	public class ScorchOverlay
 	{
 		private const int ChunkSize = 8;
 		// Soil texture spans this many cells before repeating.
 		private const float GroundTiling = 10f;
-		private const float AshChance = 0.35f;
 		private const float AshSize = 3f;
 
-		private static readonly Material GroundMat = MaterialPool.MatFrom("Terrain/Surfaces/Soil", ShaderDatabase.Transparent, new Color(0.50f, 0.43f, 0.37f));
-		private static readonly Material[] AshMats =
-		{
-			MaterialPool.MatFrom("Things/Filth/Ash/AshA", ShaderDatabase.Transparent, new Color(1f, 1f, 1f, 0.85f)),
-			MaterialPool.MatFrom("Things/Filth/Ash/AshB", ShaderDatabase.Transparent, new Color(1f, 1f, 1f, 0.85f)),
-			MaterialPool.MatFrom("Things/Filth/Ash/AshC", ShaderDatabase.Transparent, new Color(1f, 1f, 1f, 0.85f)),
-		};
+		private const int AshVariants = 3;
+		// Charred soil hue; brightness comes from tuning.
+		private static readonly Color GroundTint = new Color(1f, 0.86f, 0.74f);
+
+		// Per overlay, so tuned colors apply to the next takeoff.
+		private readonly Material groundMat;
+		private readonly Material[] ashMats;
+		private readonly float ashChance;
 
 		private class Chunk
 		{
 			public readonly List<IntVec3> ground = new List<IntVec3>();
 			public readonly List<(Vector3 pos, float angle, int variant)> ash = new List<(Vector3, float, int)>();
 			public Mesh groundMesh;
-			public readonly Mesh[] ashMeshes = new Mesh[AshMats.Length];
+			public readonly Mesh[] ashMeshes = new Mesh[AshVariants];
 			public bool dirty;
 		}
 
@@ -46,6 +45,18 @@ namespace ViolentTakeoff
 		public ScorchOverlay(Map map)
 		{
 			this.map = map;
+			DebugTuning tuning = Config.Tuning;
+			Color ground = GroundTint * tuning.ScorchBrightness;
+			ground.a = 1f;
+			groundMat = MaterialPool.MatFrom("Terrain/Surfaces/Soil", ShaderDatabase.Transparent, ground);
+			Color ash = new Color(1f, 1f, 1f, tuning.AshAlpha);
+			ashMats = new[]
+			{
+				MaterialPool.MatFrom("Things/Filth/Ash/AshA", ShaderDatabase.Transparent, ash),
+				MaterialPool.MatFrom("Things/Filth/Ash/AshB", ShaderDatabase.Transparent, ash),
+				MaterialPool.MatFrom("Things/Filth/Ash/AshC", ShaderDatabase.Transparent, ash),
+			};
+			ashChance = tuning.AshChance;
 		}
 
 		public void Add(IntVec3 cell)
@@ -62,9 +73,9 @@ namespace ViolentTakeoff
 				chunks.Add(key, chunk);
 			}
 			chunk.ground.Add(cell);
-			if (Rand.Chance(AshChance))
+			if (Rand.Chance(ashChance))
 			{
-				chunk.ash.Add((cell.ToVector3Shifted() + new Vector3(Rand.Range(-0.5f, 0.5f), 0f, Rand.Range(-0.5f, 0.5f)), Rand.Range(0f, 360f), Rand.Range(0, AshMats.Length)));
+				chunk.ash.Add((cell.ToVector3Shifted() + new Vector3(Rand.Range(-0.5f, 0.5f), 0f, Rand.Range(-0.5f, 0.5f)), Rand.Range(0f, 360f), Rand.Range(0, AshVariants)));
 			}
 			if (!chunk.dirty)
 			{
@@ -86,10 +97,10 @@ namespace ViolentTakeoff
 			if (Find.CurrentMap != map) return;
 			foreach (Chunk chunk in chunks.Values)
 			{
-				Graphics.DrawMesh(chunk.groundMesh, Vector3.zero, Quaternion.identity, GroundMat, 0);
-				for (int i = 0; i < AshMats.Length; i++)
+				Graphics.DrawMesh(chunk.groundMesh, Vector3.zero, Quaternion.identity, groundMat, 0);
+				for (int i = 0; i < AshVariants; i++)
 				{
-					if (chunk.ashMeshes[i] != null) Graphics.DrawMesh(chunk.ashMeshes[i], Vector3.zero, Quaternion.identity, AshMats[i], 0);
+					if (chunk.ashMeshes[i] != null) Graphics.DrawMesh(chunk.ashMeshes[i], Vector3.zero, Quaternion.identity, ashMats[i], 0);
 				}
 			}
 		}
@@ -105,7 +116,7 @@ namespace ViolentTakeoff
 			}
 			chunk.groundMesh = Fill(chunk.groundMesh);
 
-			for (int variant = 0; variant < AshMats.Length; variant++)
+			for (int variant = 0; variant < AshVariants; variant++)
 			{
 				verts.Clear(); uvs.Clear(); tris.Clear();
 				foreach (var ash in chunk.ash)

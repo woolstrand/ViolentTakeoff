@@ -23,6 +23,7 @@ namespace ViolentTakeoff
 		public static bool KillPawns => S.KillPawns;
 		public static bool DestroyRoofholders => S.DestroyRoofholders;
 		public static bool AffectTerrain => S.AffectTerrain;
+		public static DebugTuning Tuning => S.Tuning ?? (S.Tuning = new DebugTuning());
 	}
 
 	public static class DevastationManager {
