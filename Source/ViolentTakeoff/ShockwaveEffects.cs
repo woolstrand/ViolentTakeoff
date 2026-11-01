@@ -16,14 +16,15 @@ namespace ViolentTakeoff
 
 		private static float lastExplosionSoundTime = float.MinValue;
 
-		// Same as vanilla FleckMaker.ThrowExplosionCell (scale 1, dust puff 70% of the time), on realTime flecks.
+		// Like vanilla FleckMaker.ThrowExplosionCell on realTime flecks, a bit larger and with fewer dust puffs:
+		// scale 1 with 70% dust reads pale next to the original, 1.2-5.2 reads as an orange band.
 		public static void CellFlash(Map map, IntVec3 cell)
 		{
-			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_ExplosionFlash);
+			FleckCreationData data = FleckMaker.GetDataStatic(cell.ToVector3Shifted(), map, VT_FleckDefOf.VT_ExplosionFlash, Rand.Range(1.3f, 2f));
 			data.rotation = 90 * Rand.RangeInclusive(0, 3);
 			data.instanceColor = Color.yellow;
 			map.flecks.CreateFleck(data);
-			if (Rand.Value < 0.7f)
+			if (Rand.Value < 0.5f)
 			{
 				DustPuff(map, cell, 1.2f);
 			}

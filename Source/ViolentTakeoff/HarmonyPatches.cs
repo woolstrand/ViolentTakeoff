@@ -50,7 +50,7 @@ namespace ViolentTakeoff
             SoftenCutsceneShake();
             // The game stays paused for the whole cutscene; the shockwave animates on real time.
             CellRect? area = CutsceneViewArea(__instance, gravshipObj);
-            MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell, area);
+            MapComponent_ViolentTakeoff.For(map)?.StartShockwave(originalCell, area, duringTakeoff: true);
 
 			Verse.Log.Message("Started shockwave at " + originalCell + ", area " + (area?.ToString() ?? "whole map") +
 				$", mode {Config.Mode}, fastBookkeeping {Config.FastBookkeeping}, keepDirtyFloors {Config.SkipFilthFloors}, speed {Config.ShockwaveSpeedCellsPerSecond}, budget {Config.FrameBudgetMs}ms");
@@ -90,10 +90,13 @@ namespace ViolentTakeoff
 			shaker.DoShake(CutsceneShakeMagnitude, 120);
 		}
 
+		// Prefix: the map is abandoned and torn down inside TakeoffEnded, and its thing lists must be whole by then.
 		[HarmonyPatch(typeof(WorldComponent_GravshipController), "TakeoffEnded")]
-		[HarmonyPostfix]
-		private static void Postfix_TakeoffEnded(WorldComponent_GravshipController __instance) {
+		[HarmonyPrefix]
+		private static void Prefix_TakeoffEnded(WorldComponent_GravshipController __instance) {
 			DevastationManager.SuppressRoofChecks = false;
+			var map = AccessTools.Field(__instance.GetType(), "map")?.GetValue(__instance) as Map;
+			MapComponent_ViolentTakeoff.For(map)?.StopAll();
 		}
 
 

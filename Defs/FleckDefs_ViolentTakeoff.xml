@@ -9,8 +9,10 @@
     <defName>VT_ExplosionFlash</defName>
     <realTime>true</realTime>
     <altitudeLayer>MoteOverhead</altitudeLayer>
-    <solidTime>0.05</solidTime>
-    <fadeOutTime>0.15</fadeOutTime>
+    <!-- Longer than vanilla's 0.05 + 0.1: the original mod's game-time flashes lingered in real time while the
+         takeoff slowed the game down, which gave its ring the thick, saturated look. -->
+    <solidTime>0.12</solidTime>
+    <fadeOutTime>0.35</fadeOutTime>
     <graphicData>
       <texPath>Things/Mote/ExplosionFlash</texPath>
       <shaderType>MoteGlow</shaderType>

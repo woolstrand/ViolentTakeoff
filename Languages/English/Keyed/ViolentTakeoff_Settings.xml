@@ -54,7 +54,7 @@
 	<VT_Mode_EffectsOnly_Tooltip>Flashes, dust, flames and explosions only; the map is left as is.</VT_Mode_EffectsOnly_Tooltip>
 
 	<VT_FrameBudget_Label>Destruction time per step (ms): {0}</VT_FrameBudget_Label>
-	<VT_FrameBudget_Tooltip>Destruction runs in 15 steps per second; this is how long each step may take. Lower keeps the animation smooth; where there is more to destroy than fits, the wave slows down (to at most half its speed) instead of stuttering.</VT_FrameBudget_Tooltip>
+	<VT_FrameBudget_Tooltip>Destruction runs in 15 steps per second; this is how long each step may take. The visible ring never runs ahead of destruction: where there is more to destroy than fits, the whole wave slows down smoothly instead of stuttering. Lower keeps frames smooth, higher keeps the wave fast.</VT_FrameBudget_Tooltip>
 
 	<VT_FastBookkeeping_Label>Fast bookkeeping</VT_FastBookkeeping_Label>
 	<VT_FastBookkeeping_Tooltip>Speeds up mass destruction by temporarily setting aside the game's big lists of things on the map, which every destroyed object otherwise searches. Turn off if you see errors during takeoff.</VT_FastBookkeeping_Tooltip>

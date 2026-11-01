@@ -9,15 +9,18 @@ namespace ViolentTakeoff
 	// Driven by real time (frame deltaTime), not ticks: the takeoff cutscene keeps the game paused.
 	// All cells are sorted by distance from the center once; the wave walks that list as the radius grows,
 	// so every cell is reached exactly once and no cell is skipped when the radius jumps.
-	// Two cursors walk the list: effects (cheap) and destruction (expensive, limited to a time budget per frame).
-	// Smoothness beats speed: the ring waits for destruction to keep up instead of letting a frame stall,
-	// but never slows below MinSpeedFraction, so a very dense base can not freeze the animation.
+	// Two cursors walk the list: effects (cheap) and destruction (expensive, limited to a time budget per step).
+	// Timing beats speed: in Destroy mode the ring never runs ahead of destruction. When destruction can not keep
+	// up, the ring slows down to its pace (smoothed, so it does not stop and go between steps).
 	public class ShockwaveInstance
 	{
 		private const float StartRadius = 10f;
 		private const int MaxThingsPerCell = 10;
-		private const float MaxLead = 3f;
-		private const float MinSpeedFraction = 0.5f;
+		// How far the ring may be ahead of the destroyed area, and how far destruction may run ahead of the ring.
+		private const float MaxLead = 0.5f;
+		private const float MaxAhead = 1f;
+		// Per destruction step, how quickly the ring speed follows the measured destruction pace.
+		private const float PaceSmoothing = 0.3f;
 		// Every destruction step dirties the map sections along the ring, and the engine rebuilds them on the next
 		// frame. 15 steps a second keeps each step under a cell at normal speeds (no visible chunks) while cutting
 		// those rebuilds to a quarter of per-frame destruction.
@@ -31,10 +34,12 @@ namespace ViolentTakeoff
 		private readonly DestructionMode mode;
 		private readonly ScorchOverlay scorch;
 		private readonly ListerStash listerStash;
+		private readonly bool holdStash;
 		private int nextVisualCell;
 		private int nextDestroyCell;
 		private float radius = StartRadius;
 		private float sinceDestruction = DestructionInterval;
+		private float ringSpeed = -1f;
 
 		private readonly System.Diagnostics.Stopwatch frameWatch = new System.Diagnostics.Stopwatch();
 		private readonly List<Thing> tmpThings = new List<Thing>();
@@ -45,8 +50,11 @@ namespace ViolentTakeoff
 
 		// area: cells the wave touches at all; null = whole map. The takeoff passes the part of the map its camera
 		// can show: anything else is never seen and is discarded with the map anyway.
-		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area, ScorchOverlay scorch)
+		// duringTakeoff: the game stays paused and the map is discarded right after, so the lister lists can stay set
+		// aside for the whole wave (restored by Finish). Otherwise (debug tool, time may run) only per step.
+		public ShockwaveInstance(IntVec3 center, Map map, CellRect? area, ScorchOverlay scorch, bool duringTakeoff)
 		{
+			holdStash = duringTakeoff;
 			Center = center;
 			Map = map;
 			mode = Config.Mode;
@@ -72,6 +80,22 @@ namespace ViolentTakeoff
 			cellIndices = indices.ToArray();
 			cellDistances = distances.ToArray();
 			Array.Sort(cellDistances, cellIndices);
+			if (mode == DestructionMode.Destroy) OrderSpawnedThingsForRemoval();
+		}
+
+		// map.spawnedThings removes with LastIndexOf + RemoveAt: instant for things at the end of its list, a search
+		// and a shift of the whole list for things spawned early (like most plants and ruins, spawned at map
+		// generation). Ordering it so the cells the wave reaches first come last makes every removal instant.
+		// The order of that list means nothing to the game.
+		private void OrderSpawnedThingsForRemoval()
+		{
+			if (!(Map.spawnedThings is ThingOwner<Thing> owner)) return;
+			var rank = new int[Map.cellIndices.NumGridCells];
+			for (int i = 0; i < rank.Length; i++) rank[i] = int.MaxValue;
+			for (int i = 0; i < cellIndices.Length; i++) rank[cellIndices[i]] = i;
+			owner.InnerListForReading.Sort((a, b) => Rank(b).CompareTo(Rank(a)));
+
+			int Rank(Thing t) => t.Spawned ? rank[Map.cellIndices.CellToIndex(t.Position)] : int.MaxValue;
 		}
 
 		// Returns true when the wave has passed every cell.
@@ -82,15 +106,18 @@ namespace ViolentTakeoff
 
 			if (mode == DestructionMode.Destroy)
 			{
+				if (ringSpeed < 0f) ringSpeed = speed;
 				sinceDestruction += deltaTime;
 				if (sinceDestruction >= DestructionInterval)
 				{
+					float before = DestroyedRadius;
+					bool caughtUp = DestroyUpTo(radius + Mathf.Min(MaxAhead, speed * DestructionInterval));
+					// Out of budget: destruction is the bottleneck, so the ring takes its pace. Otherwise full speed.
+					float pace = caughtUp ? speed : Mathf.Min(speed, (DestroyedRadius - before) / sinceDestruction);
+					ringSpeed = Mathf.Lerp(ringSpeed, pace, PaceSmoothing);
 					sinceDestruction = 0f;
-					// Destroy a little ahead of the ring, so it does not have to wait between steps.
-					DestroyUpTo(target + speed * DestructionInterval);
 				}
-				float destroyedTo = nextDestroyCell < cellIndices.Length ? cellDistances[nextDestroyCell] : float.MaxValue;
-				radius = Mathf.Max(radius + speed * MinSpeedFraction * deltaTime, Mathf.Min(target, destroyedTo + MaxLead));
+				radius = Mathf.Min(radius + ringSpeed * deltaTime, DestroyedRadius + MaxLead);
 			}
 			else
 			{
@@ -112,22 +139,40 @@ namespace ViolentTakeoff
 			return destroyDone && nextVisualCell >= cellIndices.Length;
 		}
 
-		private void DestroyUpTo(float limit)
+		// Must run before the map is used for anything but this wave again (end of wave, end of takeoff, stop).
+		public void Finish()
+		{
+			ReleaseStash();
+		}
+
+		private void ReleaseStash()
+		{
+			Profile.Stash.Start();
+			listerStash?.End();
+			Profile.Stash.Stop();
+		}
+
+		// Radius of the first cell not destroyed yet.
+		private float DestroyedRadius => nextDestroyCell < cellIndices.Length ? cellDistances[nextDestroyCell] : float.MaxValue;
+
+		// Returns false if the time budget ran out before reaching the limit.
+		private bool DestroyUpTo(float limit)
 		{
 			float budgetMs = Config.FrameBudgetMs;
 			frameWatch.Restart();
 			try
 			{
-				while (nextDestroyCell < cellIndices.Length && cellDistances[nextDestroyCell] <= limit
-					&& frameWatch.Elapsed.TotalMilliseconds < budgetMs)
+				while (nextDestroyCell < cellIndices.Length && cellDistances[nextDestroyCell] <= limit)
 				{
+					if (frameWatch.Elapsed.TotalMilliseconds >= budgetMs) return false;
 					if (Rand.Chance(Config.BaseCellChance)) Devastate(Map.cellIndices.IndexToCell(cellIndices[nextDestroyCell]));
 					nextDestroyCell++;
 				}
+				return true;
 			}
 			finally
 			{
-				listerStash?.End();
+				if (!holdStash) ReleaseStash();
 			}
 		}
 
@@ -164,7 +209,7 @@ namespace ViolentTakeoff
 		// Called right before anything is despawned, so batches that destroy nothing skip the lister shuffle.
 		private void BeforeDespawn()
 		{
-			if (listerStash != null && !listerStash.Active) listerStash.Begin();
+			if (listerStash != null && !listerStash.Active) { Profile.Stash.Start(); listerStash.Begin(); Profile.Stash.Stop(); }
 		}
 
 		private void AffectTerrain(IntVec3 cell)
@@ -273,6 +318,7 @@ namespace ViolentTakeoff
 		public static readonly System.Diagnostics.Stopwatch Things = new System.Diagnostics.Stopwatch();
 		public static readonly System.Diagnostics.Stopwatch Terrain = new System.Diagnostics.Stopwatch();
 		public static readonly System.Diagnostics.Stopwatch Visuals = new System.Diagnostics.Stopwatch();
+		public static readonly System.Diagnostics.Stopwatch Stash = new System.Diagnostics.Stopwatch();
 		public static int Plants, Buildings, RoofHolders, Items, Pawns, Other, TerrainChanged;
 
 		public static void Count(Thing thing)
@@ -286,9 +332,9 @@ namespace ViolentTakeoff
 
 		public static string Report()
 		{
-			string r = $"things={Things.Elapsed.TotalMilliseconds:0}ms terrain={Terrain.Elapsed.TotalMilliseconds:0}ms visuals={Visuals.Elapsed.TotalMilliseconds:0}ms " +
+			string r = $"things={Things.Elapsed.TotalMilliseconds:0}ms terrain={Terrain.Elapsed.TotalMilliseconds:0}ms visuals={Visuals.Elapsed.TotalMilliseconds:0}ms stash={Stash.Elapsed.TotalMilliseconds:0}ms " +
 				$"| plants={Plants} buildings={Buildings} roofholders={RoofHolders} items={Items} pawns={Pawns} other={Other} terrainChanged={TerrainChanged}";
-			Things.Reset(); Terrain.Reset(); Visuals.Reset();
+			Things.Reset(); Terrain.Reset(); Visuals.Reset(); Stash.Reset();
 			Plants = Buildings = RoofHolders = Items = Pawns = Other = TerrainChanged = 0;
 			return r;
 		}

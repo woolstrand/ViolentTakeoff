@@ -30,6 +30,7 @@ namespace ViolentTakeoff
 			{
 				if (active[i].Update(deltaTime))
 				{
+					active[i].Finish();
 					LogStats(active[i], final: true);
 					active.RemoveAt(i);
 				}
@@ -68,17 +69,18 @@ namespace ViolentTakeoff
 			statFrameSecs = statFrameMaxSecs = 0;
 		}
 
-		public void StartShockwave(IntVec3 center, CellRect? area = null)
+		public void StartShockwave(IntVec3 center, CellRect? area = null, bool duringTakeoff = false)
 		{
 			map.fogGrid.ClearAllFog();
 			if (Config.Mode == DestructionMode.Scorch && scorch == null) scorch = new ScorchOverlay(map);
-			active.Add(new ShockwaveInstance(center, map, area, scorch));
+			active.Add(new ShockwaveInstance(center, map, area, scorch, duringTakeoff));
 		}
 
+		// Stops the waves; the scorch overlay (if any) stays drawn.
 		public void StopAll()
 		{
+			foreach (ShockwaveInstance wave in active) wave.Finish();
 			active.Clear();
-			scorch = null;
 		}
 
 		public static MapComponent_ViolentTakeoff For(Map map)
