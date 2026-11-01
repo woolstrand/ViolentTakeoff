@@ -67,24 +67,17 @@ namespace ViolentTakeoff
 			}
 		}
 
+		// Presets trade cost for looks only; gameplay choices (pawn deaths, what may be destroyed) stay as in Default.
+		// Slow: scorch instead of destruction (near-free on any map) and lighter effects.
 		private void ApplyPresetSlow()
 		{
+			ApplyPresetDefault();
 			Mode = DestructionMode.Scorch;
-			FastBookkeeping = true;
-			SkipFilthFloors = true;
 			FrameBudgetMs = 3f;
-			BaseCellChance = 0.8f;
-			ShockwaveSpeedCellsPerSecond = 12f;
+			BaseCellChance = 0.85f;
 			VisualsFleckChance = 0.6f;
 			FireStartChancePerCell = 0.005f;
-			ExplosionChancePerCell = 0.0005f;
-			FireSize = 1.0f;
-			RemoveGrass = false;
-			DestroyItems = false;
-			DestroyBuildings = false;
-			KillPawns = false;
-			DestroyRoofholders = false;
-			AffectTerrain = true;
+			ExplosionChancePerCell = 0.004f;
 		}
 
 		private void ApplyPresetDefault()
@@ -107,24 +100,16 @@ namespace ViolentTakeoff
 			AffectTerrain = true;
 		}
 
+		// Powerful: more destruction per step and denser effects, dirty floors removed too.
 		private void ApplyPresetPowerful()
 		{
-			Mode = DestructionMode.Destroy;
-			FastBookkeeping = true;
+			ApplyPresetDefault();
 			SkipFilthFloors = false;
 			FrameBudgetMs = 10f;
 			BaseCellChance = 1f;
-			ShockwaveSpeedCellsPerSecond = 12f;
-			VisualsFleckChance = 0.7f;
+			VisualsFleckChance = 0.9f;
 			FireStartChancePerCell = 0.02f;
 			ExplosionChancePerCell = 0.015f;
-			FireSize = 2.4f;
-			RemoveGrass = true;
-			DestroyItems = true;
-			DestroyBuildings = true;
-			KillPawns = true;
-			DestroyRoofholders = true;
-			AffectTerrain = true;
 		}
 
 		public void DoWindowContents(Rect inRect)
